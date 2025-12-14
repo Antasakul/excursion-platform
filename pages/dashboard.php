@@ -316,23 +316,13 @@ function getOrderStatus($order) {
                                             <input type="hidden" name="review_id" value="<?php echo $review['id']; ?>">
                                         <?php endif; ?>
                                         <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label><strong>Оценка экскурсии:</strong></label>
+                                            <label><strong>Оценка:</strong></label>
                                             <select name="rating" required style="padding: 0.5rem; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 4px;">
-                                                <option value="5" <?php echo ($review && $review['rating'] == 5) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Отлично (5)</option>
-                                                <option value="4" <?php echo ($review && $review['rating'] == 4) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Хорошо (4)</option>
-                                                <option value="3" <?php echo ($review && $review['rating'] == 3) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Нормально (3)</option>
-                                                <option value="2" <?php echo ($review && $review['rating'] == 2) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Плохо (2)</option>
-                                                <option value="1" <?php echo ($review && $review['rating'] == 1) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i> Ужасно (1)</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group" style="margin-bottom: 1rem;">
-                                            <label><strong>Оценка гида:</strong></label>
-                                            <select name="guide_rating" required style="padding: 0.5rem; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 4px;">
-                                                <option value="5" <?php echo ($review && $review['guide_rating'] == 5) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Отлично (5)</option>
-                                                <option value="4" <?php echo ($review && $review['guide_rating'] == 4) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Хорошо (4)</option>
-                                                <option value="3" <?php echo ($review && $review['guide_rating'] == 3) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Нормально (3)</option>
-                                                <option value="2" <?php echo ($review && $review['guide_rating'] == 2) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Плохо (2)</option>
-                                                <option value="1" <?php echo ($review && $review['guide_rating'] == 1) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i> Ужасно (1)</option>
+                                                <option value="5" <?php echo ($review && $review['rating'] == 5) ? 'selected' : ''; ?>>⭐⭐⭐⭐⭐ Отлично (5)</option>
+                                                <option value="4" <?php echo ($review && $review['rating'] == 4) ? 'selected' : ''; ?>>⭐⭐⭐⭐ Хорошо (4)</option>
+                                                <option value="3" <?php echo ($review && $review['rating'] == 3) ? 'selected' : ''; ?>>⭐⭐⭐ Нормально (3)</option>
+                                                <option value="2" <?php echo ($review && $review['rating'] == 2) ? 'selected' : ''; ?>>⭐⭐ Плохо (2)</option>
+                                                <option value="1" <?php echo ($review && $review['rating'] == 1) ? 'selected' : ''; ?>>⭐ Ужасно (1)</option>
                                             </select>
                                         </div>
                                         <div class="form-group" style="margin-bottom: 1rem;">

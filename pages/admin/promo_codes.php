@@ -34,7 +34,7 @@ try {
 require_once base_path('includes/header.php');
 ?>
 
-<div class="dashboard-container">
+<div class="dashboard-container" style="max-width: 1400px; margin: 0 auto; padding: 24px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
         <h1><i class="bi bi-ticket-perforated"></i> Управление промокодами</h1>
         <a href="<?php echo route_path('pages/admin/dashboard.php'); ?>" class="btn btn-secondary">

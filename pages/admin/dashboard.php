@@ -58,8 +58,8 @@ $reviews = $reviewsStmt->fetchAll();
 require_once base_path('includes/header.php');
 ?>
 
-<div class="dashboard-container">
-    <h1>Админ-панель</h1>
+<div class="dashboard-container" style="max-width: 1400px; margin: 0 auto; padding: 24px;">
+    <h1><i class="bi bi-speedometer2"></i> Админ-панель</h1>
 
     <?php if(isset($_SESSION['success'])): ?>
         <div class="alert alert-success"><?php echo $_SESSION['success']; unset($_SESSION['success']); ?></div>
@@ -204,161 +204,247 @@ require_once base_path('includes/header.php');
     </section>
 
     <section class="admin-section">
-        <h2>Управление пользователями</h2>
+        <h2><i class="bi bi-people"></i> Управление пользователями (<?php echo count($users); ?>)</h2>
         <div class="table-responsive">
-            <table>
+            <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Имя</th>
-                        <th>Email</th>
-                        <th>Роль</th>
-                        <th>Создан</th>
-                        <th>Действия</th>
+                        <th><i class="bi bi-hash"></i> ID</th>
+                        <th><i class="bi bi-person"></i> Имя</th>
+                        <th><i class="bi bi-envelope"></i> Email</th>
+                        <th><i class="bi bi-shield-check"></i> Роль</th>
+                        <th><i class="bi bi-calendar"></i> Создан</th>
+                        <th><i class="bi bi-gear"></i> Действия</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach($users as $user): ?>
-                    <tr>
-                        <td><?php echo $user['id']; ?></td>
-                        <td><?php echo htmlspecialchars($user['full_name']); ?></td>
-                        <td><?php echo htmlspecialchars($user['email']); ?></td>
-                        <td>
-                            <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" class="inline-form">
-                                <input type="hidden" name="action" value="update_user_role">
-                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                <select name="user_type" onchange="this.form.submit()" <?php echo $user['id'] === $_SESSION['user_id'] ? 'disabled' : ''; ?>>
-                                    <option value="customer" <?php echo $user['user_type'] === 'customer' ? 'selected' : ''; ?>>Клиент</option>
-                                    <option value="guide" <?php echo $user['user_type'] === 'guide' ? 'selected' : ''; ?>>Гид</option>
-                                    <option value="admin" <?php echo $user['user_type'] === 'admin' ? 'selected' : ''; ?>>Админ</option>
-                                </select>
-                            </form>
-                        </td>
-                        <td><?php echo $user['created_at']; ?></td>
-                        <td>
-                            <?php if($user['avatar_url']): ?>
+                    <?php if(empty($users)): ?>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+                                Пользователи не найдены
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach($users as $user): ?>
+                        <tr>
+                            <td><?php echo $user['id']; ?></td>
+                            <td><strong><?php echo htmlspecialchars($user['full_name']); ?></strong></td>
+                            <td><?php echo htmlspecialchars($user['email']); ?></td>
+                            <td>
                                 <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" class="inline-form">
-                                    <input type="hidden" name="action" value="toggle_user_avatar">
+                                    <input type="hidden" name="action" value="update_user_role">
                                     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                    <button type="submit" class="btn btn-warning" <?php echo $user['id'] === $_SESSION['user_id'] ? 'disabled' : ''; ?>>Удалить аватар</button>
+                                    <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                    <select name="user_type" onchange="this.form.submit()" 
+                                            class="role-select" 
+                                            <?php echo $user['id'] === $_SESSION['user_id'] ? 'disabled' : ''; ?>>
+                                        <option value="customer" <?php echo $user['user_type'] === 'customer' ? 'selected' : ''; ?>>Клиент</option>
+                                        <option value="guide" <?php echo $user['user_type'] === 'guide' ? 'selected' : ''; ?>>Гид</option>
+                                        <option value="admin" <?php echo $user['user_type'] === 'admin' ? 'selected' : ''; ?>>Админ</option>
+                                    </select>
                                 </form>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
+                            </td>
+                            <td><?php echo date('d.m.Y', strtotime($user['created_at'])); ?></td>
+                            <td>
+                                <?php if($user['avatar_url'] && $user['id'] !== $_SESSION['user_id']): ?>
+                                    <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" class="inline-form">
+                                        <input type="hidden" name="action" value="toggle_user_avatar">
+                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                        <button type="submit" class="btn btn-warning" style="padding: 6px 12px; font-size: 14px;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </section>
 
     <section class="admin-section">
-        <h2>Экскурсии</h2>
+        <h2><i class="bi bi-map"></i> Управление экскурсиями (<?php echo count($excursions); ?>)</h2>
         <div class="table-responsive">
-            <table>
+            <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Название</th>
-                        <th>Гид</th>
-                        <th>Статус</th>
-                        <th>Действие</th>
+                        <th><i class="bi bi-hash"></i> ID</th>
+                        <th><i class="bi bi-bookmark"></i> Название</th>
+                        <th><i class="bi bi-person"></i> Гид</th>
+                        <th><i class="bi bi-toggle-on"></i> Статус</th>
+                        <th><i class="bi bi-gear"></i> Действие</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach($excursions as $exc): ?>
-                    <tr>
-                        <td><?php echo $exc['id']; ?></td>
-                        <td><?php echo htmlspecialchars($exc['title']); ?></td>
-                        <td><?php echo htmlspecialchars($exc['guide_name']); ?></td>
-                        <td><?php echo $exc['is_active'] ? 'Активна' : 'Отключена'; ?></td>
-                        <td>
-                            <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>">
-                                <input type="hidden" name="action" value="toggle_excursion">
-                                <input type="hidden" name="excursion_id" value="<?php echo $exc['id']; ?>">
-                                <button type="submit" class="btn <?php echo $exc['is_active'] ? 'btn-warning' : 'btn-success'; ?>">
-                                    <?php echo $exc['is_active'] ? 'Деактивировать' : 'Активировать'; ?>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
+                    <?php if(empty($excursions)): ?>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+                                Экскурсии не найдены
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach($excursions as $exc): ?>
+                        <tr>
+                            <td><?php echo $exc['id']; ?></td>
+                            <td><strong><?php echo htmlspecialchars($exc['title']); ?></strong></td>
+                            <td><?php echo htmlspecialchars($exc['guide_name']); ?></td>
+                            <td>
+                                <span class="status-badge <?php echo $exc['is_active'] ? 'status-active' : 'status-inactive'; ?>">
+                                    <?php echo $exc['is_active'] ? 'Активна' : 'Отключена'; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" style="display: inline;">
+                                    <input type="hidden" name="action" value="toggle_excursion">
+                                    <input type="hidden" name="excursion_id" value="<?php echo $exc['id']; ?>">
+                                    <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                    <button type="submit" class="btn <?php echo $exc['is_active'] ? 'btn-warning' : 'btn-success'; ?>" style="padding: 6px 12px; font-size: 14px;">
+                                        <i class="bi <?php echo $exc['is_active'] ? 'bi-pause-circle' : 'bi-play-circle'; ?>"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </section>
 
     <section class="admin-section">
-        <h2>Последние заказы</h2>
+        <h2><i class="bi bi-cart"></i> Последние заказы (<?php echo count($latestOrders); ?>)</h2>
         <div class="table-responsive">
-            <table>
+            <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Экскурсия</th>
-                        <th>Клиент</th>
-                        <th>Сумма</th>
-                        <th>Статус</th>
-                        <th>Действие</th>
+                        <th><i class="bi bi-hash"></i> ID</th>
+                        <th><i class="bi bi-bookmark"></i> Экскурсия</th>
+                        <th><i class="bi bi-person"></i> Клиент</th>
+                        <th><i class="bi bi-currency-exchange"></i> Сумма</th>
+                        <th><i class="bi bi-info-circle"></i> Статус</th>
+                        <th><i class="bi bi-gear"></i> Действие</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach($latestOrders as $order): ?>
-                    <tr>
-                        <td><?php echo $order['id']; ?></td>
-                        <td><?php echo htmlspecialchars($order['title']); ?></td>
-                        <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                        <td><?php echo $order['total_price']; ?> руб.</td>
-                        <td><?php echo $order['status']; ?></td>
-                        <td>
-                            <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" class="inline-form">
-                                <input type="hidden" name="action" value="update_order_status">
-                                <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
-                                <select name="status" onchange="this.form.submit()">
-                                    <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Ожидание</option>
-                                    <option value="confirmed" <?php echo $order['status'] === 'confirmed' ? 'selected' : ''; ?>>Подтвержден</option>
-                                    <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>Отменен</option>
-                                    <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Завершен</option>
-                                </select>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
+                    <?php if(empty($latestOrders)): ?>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+                                Заказы не найдены
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach($latestOrders as $order): ?>
+                        <tr>
+                            <td><?php echo $order['id']; ?></td>
+                            <td><strong><?php echo htmlspecialchars($order['title']); ?></strong></td>
+                            <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                            <td><strong style="color: var(--primary-color);"><?php echo number_format($order['total_price'], 2); ?> руб.</strong></td>
+                            <td>
+                                <?php
+                                $statusClasses = [
+                                    'pending' => 'status-pending',
+                                    'confirmed' => 'status-confirmed',
+                                    'cancelled' => 'status-cancelled',
+                                    'completed' => 'status-completed'
+                                ];
+                                $statusTexts = [
+                                    'pending' => 'Ожидание',
+                                    'confirmed' => 'Подтвержден',
+                                    'cancelled' => 'Отменен',
+                                    'completed' => 'Завершен'
+                                ];
+                                $statusClass = $statusClasses[$order['status']] ?? 'status-pending';
+                                $statusText = $statusTexts[$order['status']] ?? $order['status'];
+                                ?>
+                                <span class="status-badge <?php echo $statusClass; ?>">
+                                    <?php echo $statusText; ?>
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" class="inline-form">
+                                    <input type="hidden" name="action" value="update_order_status">
+                                    <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                                    <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                    <select name="status" onchange="this.form.submit()" class="status-select">
+                                        <option value="pending" <?php echo $order['status'] === 'pending' ? 'selected' : ''; ?>>Ожидание</option>
+                                        <option value="confirmed" <?php echo $order['status'] === 'confirmed' ? 'selected' : ''; ?>>Подтвержден</option>
+                                        <option value="cancelled" <?php echo $order['status'] === 'cancelled' ? 'selected' : ''; ?>>Отменен</option>
+                                        <option value="completed" <?php echo $order['status'] === 'completed' ? 'selected' : ''; ?>>Завершен</option>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </section>
 
     <section class="admin-section">
-        <h2>Отзывы</h2>
+        <h2><i class="bi bi-star"></i> Отзывы (<?php echo count($reviews); ?>)</h2>
         <div class="table-responsive">
-            <table>
+            <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Экскурсия</th>
-                        <th>Автор</th>
-                        <th>Оценка</th>
-                        <th>Комментарий</th>
-                        <th>Удалить</th>
+                        <th><i class="bi bi-hash"></i> ID</th>
+                        <th><i class="bi bi-bookmark"></i> Экскурсия</th>
+                        <th><i class="bi bi-person"></i> Автор</th>
+                        <th><i class="bi bi-star-fill"></i> Оценка</th>
+                        <th><i class="bi bi-chat-left-text"></i> Комментарий</th>
+                        <th><i class="bi bi-gear"></i> Действие</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach($reviews as $review): ?>
-                    <tr>
-                        <td><?php echo $review['id']; ?></td>
-                        <td><?php echo htmlspecialchars($review['title']); ?></td>
-                        <td><?php echo htmlspecialchars($review['author']); ?></td>
-                        <td><?php echo $review['rating']; ?>/5</td>
-                        <td><?php echo htmlspecialchars($review['comment']); ?></td>
-                        <td>
-                            <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>">
-                                <input type="hidden" name="action" value="delete_review">
-                                <input type="hidden" name="review_id" value="<?php echo $review['id']; ?>">
-                                <button type="submit" class="btn btn-danger">Удалить</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
+                    <?php if(empty($reviews)): ?>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+                                Отзывы не найдены
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach($reviews as $review): ?>
+                        <tr>
+                            <td><?php echo $review['id']; ?></td>
+                            <td><strong><?php echo htmlspecialchars($review['title']); ?></strong></td>
+                            <td><?php echo htmlspecialchars($review['author']); ?></td>
+                            <td>
+                                <span style="display: flex; align-items: center; gap: 4px;">
+                                    <?php for($i = 1; $i <= 5; $i++): ?>
+                                        <i class="bi bi-star<?php echo $i <= $review['rating'] ? '-fill' : ''; ?>" 
+                                           style="color: <?php echo $i <= $review['rating'] ? '#FBBF24' : '#E0E0E0'; ?>;"></i>
+                                    <?php endfor; ?>
+                                    <strong style="margin-left: 8px; color: var(--text-dark);"><?php echo $review['rating']; ?>/5</strong>
+                                </span>
+                            </td>
+                            <td style="max-width: 300px;">
+                                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" 
+                                     title="<?php echo htmlspecialchars($review['comment']); ?>">
+                                    <?php echo htmlspecialchars($review['comment']); ?>
+                                </div>
+                            </td>
+                            <td>
+                                <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" style="display: inline;">
+                                    <input type="hidden" name="action" value="delete_review">
+                                    <input type="hidden" name="review_id" value="<?php echo $review['id']; ?>">
+                                    <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                    <button type="submit" class="btn btn-danger" 
+                                            style="padding: 6px 12px; font-size: 14px;"
+                                            onclick="return confirm('Вы уверены, что хотите удалить этот отзыв?');">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -410,9 +496,22 @@ function resetForm() {
 
 <style>
 .dashboard-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 24px;
+}
+
+.dashboard-container h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    font-size: 32px;
+    color: var(--text-dark);
+}
+
+.dashboard-container h1 i {
+    color: var(--primary-color);
 }
 
 .dashboard-tabs {
@@ -720,6 +819,122 @@ function resetForm() {
     box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
 }
 
+/* Стили для админских таблиц */
+.admin-section {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    padding: 32px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    margin-bottom: 32px;
+}
+
+.admin-section h2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 24px;
+    color: var(--text-dark);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table thead {
+    background: var(--bg-light);
+}
+
+.admin-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-color);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.admin-table th i {
+    margin-right: 6px;
+    color: var(--primary-color);
+}
+
+.admin-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.admin-table tbody tr:hover {
+    background: var(--bg-light);
+}
+
+.role-select,
+.status-select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--bg-white);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.role-select:focus,
+.status-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+.inline-form {
+    display: inline;
+    margin: 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: var(--bg-white);
+    padding: 24px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card h3 {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.stat-card p {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+
 @media (max-width: 1024px) {
     .profile-layout {
         grid-template-columns: 1fr;
@@ -731,6 +946,19 @@ function resetForm() {
     
     .form-row-2 {
         grid-template-columns: 1fr;
+    }
+    
+    .admin-section {
+        padding: 20px;
+    }
+    
+    .admin-table {
+        font-size: 14px;
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: 12px 8px;
     }
 }
 </style>

@@ -28,8 +28,8 @@ require_once base_path('includes/header.php');
 ?>
 
 <div class="container">
-    <h1>Все экскурсии</h1>
-    
+    <!--<h1>Все экскурсии</h1>-->
+    <br>
     <?php if(isset($_SESSION['success'])): ?>
         <div class="alert alert-success">
             <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>

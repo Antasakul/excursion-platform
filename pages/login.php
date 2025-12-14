@@ -27,7 +27,7 @@ require_once base_path('includes/header.php');
 
         <form method="POST" action="<?php echo route_path('includes/auth.php'); ?>">
             <div class="form-group">
-                <label>Имя пользователя или Email:</label>
+                <label>Имя пользователя:</label>
                 <input type="text" name="username" required autocomplete="username"
                        value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
             </div>
@@ -36,22 +36,22 @@ require_once base_path('includes/header.php');
                 <label>Пароль:</label>
                 <input type="password" name="password" required autocomplete="current-password">
             </div>
-            
+            <!--
             <div class="form-group">
                 <label>
                     <input type="checkbox" name="remember_me"> Запомнить меня
                 </label>
-            </div>
+            </div>-->
 
             <button type="submit" name="login" class="btn btn-primary btn-block">Войти</button>
         </form>
 
         <div class="auth-links">
             <p>Нет аккаунта? <a href="<?php echo route_path('pages/register.php'); ?>">Зарегистрируйтесь</a></p>
-            <p><a href="<?php echo route_path('pages/forgot_password.php'); ?>">Забыли пароль?</a></p>
+           <!-- <p><a href="<?php echo route_path('pages/forgot_password.php'); ?>">Забыли пароль?</a></p>-->
         </div>
         
-        <!-- Демо-аккаунты для тестирования -->
+        <!-- Демо-аккаунты для тестирования 
         <div class="demo-accounts" style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
             <h4>Демо-аккаунты для тестирования:</h4>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
@@ -66,7 +66,7 @@ require_once base_path('includes/header.php');
                     Пароль: <code>password123</code>
                 </div>
             </div>
-        </div>
+        </div>-->
     </div>
 </div>
 

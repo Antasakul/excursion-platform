@@ -282,23 +282,13 @@ function getOrderStatus($order) {
                                 <form method="POST" action="<?php echo route_path('includes/submit_review.php'); ?>" style="padding: 1rem; background: #f8f9fa; border-radius: 4px;">
                                     <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                                     <div class="form-group" style="margin-bottom: 1rem;">
-                                        <label><strong>Оценка экскурсии:</strong></label>
+                                        <label><strong>Оценка:</strong></label>
                                         <select name="rating" required style="padding: 0.5rem; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 4px;">
-                                            <option value="5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Отлично (5)</option>
-                                            <option value="4"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Хорошо (4)</option>
-                                            <option value="3"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Нормально (3)</option>
-                                            <option value="2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Плохо (2)</option>
-                                            <option value="1"><i class="bi bi-star-fill"></i> Ужасно (1)</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group" style="margin-bottom: 1rem;">
-                                        <label><strong>Оценка гида:</strong></label>
-                                        <select name="guide_rating" required style="padding: 0.5rem; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 4px;">
-                                            <option value="5"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Отлично (5)</option>
-                                            <option value="4"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Хорошо (4)</option>
-                                            <option value="3"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Нормально (3)</option>
-                                            <option value="2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Плохо (2)</option>
-                                            <option value="1"><i class="bi bi-star-fill"></i> Ужасно (1)</option>
+                                            <option value="5">⭐⭐⭐⭐⭐ Отлично (5)</option>
+                                            <option value="4">⭐⭐⭐⭐ Хорошо (4)</option>
+                                            <option value="3">⭐⭐⭐ Нормально (3)</option>
+                                            <option value="2">⭐⭐ Плохо (2)</option>
+                                            <option value="1">⭐ Ужасно (1)</option>
                                         </select>
                                     </div>
                                     <div class="form-group" style="margin-bottom: 1rem;">

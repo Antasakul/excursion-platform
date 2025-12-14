@@ -15,7 +15,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     $customer_id = $_SESSION['user_id'];
     $order_id = (int)$_POST['order_id'];
     $rating = (int)$_POST['rating'];
-    $guide_rating = isset($_POST['guide_rating']) ? (int)$_POST['guide_rating'] : $rating; // По умолчанию такая же как оценка экскурсии
     $comment = trim($_POST['comment']);
     $is_edit = isset($_POST['review_id']) && (int)$_POST['review_id'] > 0;
 
@@ -37,14 +36,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     }
 
     try {
-        // Проверяем наличие поля guide_rating
-        try {
-            $checkStmt = $pdo->query("SHOW COLUMNS FROM reviews LIKE 'guide_rating'");
-            $hasGuideRating = $checkStmt->rowCount() > 0;
-        } catch(PDOException $e) {
-            $hasGuideRating = false;
-        }
-        
         if($is_edit) {
             // Редактирование существующего отзыва
             $review_id = (int)$_POST['review_id'];
@@ -56,13 +47,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
                 throw new Exception("Отзыв не найден или не принадлежит вам");
             }
             
-            if($hasGuideRating) {
-                $stmt = $pdo->prepare("UPDATE reviews SET rating = ?, guide_rating = ?, comment = ?, updated_at = NOW() WHERE id = ?");
-                $stmt->execute([$rating, $guide_rating, $comment, $review_id]);
-            } else {
-                $stmt = $pdo->prepare("UPDATE reviews SET rating = ?, comment = ? WHERE id = ?");
-                $stmt->execute([$rating, $comment, $review_id]);
-            }
+            $stmt = $pdo->prepare("UPDATE reviews SET rating = ?, comment = ? WHERE id = ?");
+            $stmt->execute([$rating, $comment, $review_id]);
             $_SESSION['success'] = "Отзыв успешно обновлен!";
         } else {
             // Создание нового отзыва
@@ -77,13 +63,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
                 exit();
             }
             
-            if($hasGuideRating) {
-                $stmt = $pdo->prepare("INSERT INTO reviews (order_id, rating, guide_rating, comment) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$order_id, $rating, $guide_rating, $comment]);
-            } else {
-                $stmt = $pdo->prepare("INSERT INTO reviews (order_id, rating, comment) VALUES (?, ?, ?)");
-                $stmt->execute([$order_id, $rating, $comment]);
-            }
+            $stmt = $pdo->prepare("INSERT INTO reviews (order_id, rating, comment) VALUES (?, ?, ?)");
+            $stmt->execute([$order_id, $rating, $comment]);
             $_SESSION['success'] = "Спасибо за ваш отзыв!";
         }
     } catch(PDOException $e) {

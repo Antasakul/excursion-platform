@@ -34,6 +34,52 @@
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const carouselTrack = document.querySelector('.carousel-track');
+    if (!carouselTrack) return;
+    
+    const slides = carouselTrack.querySelectorAll('.carousel-slide');
+    const totalSlides = slides.length;
+    const visibleSlides = 4; // Показываем 4 слайда одновременно
+    let currentIndex = 0;
+    let isTransitioning = false;
+    
+    function moveCarousel() {
+        if (isTransitioning) return;
+        isTransitioning = true;
+        
+        // Перемещаем карусель
+        const translateX = -(currentIndex * (100 / visibleSlides));
+        carouselTrack.style.transition = 'transform 1s ease-in-out';
+        carouselTrack.style.transform = `translateX(${translateX}%)`;
+        
+        // Увеличиваем индекс
+        currentIndex++;
+        
+        // Если достигли конца, возвращаемся к началу (бесшовная прокрутка)
+        if (currentIndex >= totalSlides - visibleSlides) {
+            setTimeout(() => {
+                carouselTrack.style.transition = 'none';
+                currentIndex = 0;
+                carouselTrack.style.transform = `translateX(0%)`;
+                isTransitioning = false;
+            }, 1000);
+        } else {
+            setTimeout(() => {
+                isTransitioning = false;
+            }, 1000);
+        }
+    }
+    
+    // Автоматическая прокрутка каждые 3 секунды
+    setInterval(moveCarousel, 3000);
+    
+    // Начальная позиция
+    setTimeout(moveCarousel, 1000);
+});
+</script>
+
 <div class="container">
     <section class="features">
         <h2>Почему выбирают нас?</h2>

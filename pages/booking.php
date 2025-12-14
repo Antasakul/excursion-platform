@@ -139,8 +139,12 @@ if(count($reviews) > 0) {
                 
                 <?php if(isset($_SESSION['user_id'])): ?>
                     <?php if($_SESSION['user_type'] !== 'customer'): ?>
-                        <div class="alert alert-error">
-                            <p><strong>Внимание!</strong> Бронирование экскурсий доступно только для клиентов. Администраторы и гиды не могут бронировать экскурсии.</p>
+                        <div class="alert alert-error" style="margin-bottom: 24px; padding: 20px; border-radius: 12px; border-left: 4px solid #EF4444; background: #FFF5F5; color: #C53030; display: flex; align-items: start; gap: 12px;">
+                            <i class="bi bi-exclamation-triangle-fill" style="font-size: 24px; flex-shrink: 0;"></i>
+                            <div>
+                                <strong style="display: block; margin-bottom: 4px; font-size: 16px;">Бронирование недоступно!</strong>
+                                <p style="margin: 0; font-size: 14px; line-height: 1.5;">Данный функционал доступен только для клиентов. Администраторы и гиды не могут бронировать экскурсии.</p>
+                            </div>
                         </div>
                     <?php elseif(count($available_dates) > 0): ?>
                         <form method="POST" action="<?php echo route_path('includes/process_booking.php'); ?>">
@@ -220,8 +224,12 @@ if(count($reviews) > 0) {
                             </form>
                         </div>
                     <?php elseif(isset($_SESSION['user_id'])): ?>
-                        <div class="alert alert-info">
-                            <p><i class="bi bi-info-circle"></i> Добавление в избранное доступно только для клиентов.</p>
+                        <div class="alert alert-info" style="margin-top: 24px; padding: 20px; border-radius: 12px; border-left: 4px solid #3B82F6; background: #EFF6FF; color: #1E40AF; display: flex; align-items: start; gap: 12px;">
+                            <i class="bi bi-info-circle-fill" style="font-size: 24px; flex-shrink: 0;"></i>
+                            <div>
+                                <strong style="display: block; margin-bottom: 4px; font-size: 16px;">Добавление в избранное недоступно!</strong>
+                                <p style="margin: 0; font-size: 14px; line-height: 1.5;">Данный функционал доступен только для клиентов. Администраторы и гиды не могут добавлять экскурсии в избранное.</p>
+                            </div>
                         </div>
                     <?php endif; ?>
                     

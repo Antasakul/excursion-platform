@@ -41,7 +41,7 @@ require_once base_path('includes/header.php');
             </div>
             <button type="submit" name="register" class="btn btn-primary">Зарегистрироваться</button>
         </form>
-        <p>Уже есть аккаунт? <a href="<?php echo route_path('pages/login.php'); ?>">Войдите</a></p>
+        <p style="  text-align: center;">Уже есть аккаунт? <a href="<?php echo route_path('pages/login.php'); ?>">Войдите</a></p>
     </div>
 </div>
 
