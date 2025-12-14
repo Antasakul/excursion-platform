@@ -64,6 +64,9 @@ try {
     $_SESSION['error'] = "Ошибка отмены: " . $e->getMessage();
 }
 
-header('Location: ' . route_path('pages/customer/dashboard.php'));
+// Перенаправляем на предыдущую страницу
+require_once __DIR__ . '/redirect_helper.php';
+$redirectUrl = getRedirectUrl();
+header('Location: ' . $redirectUrl);
 exit();
 

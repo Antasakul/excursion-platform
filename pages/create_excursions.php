@@ -37,6 +37,7 @@ require_once base_path('includes/header.php');
     
     <form method="POST" action="<?php echo route_path('includes/manage_excursion.php'); ?>" enctype="multipart/form-data" class="excursion-form">
         <input type="hidden" name="action" value="create">
+        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI'] ?? route_path('pages/create_excursions.php')); ?>">
         <input type="hidden" name="MAX_FILE_SIZE" value="<?php echo 20 * 1024 * 1024; ?>">
         
         <div class="form-group">
@@ -112,7 +113,7 @@ require_once base_path('includes/header.php');
                 Можно выбрать несколько файлов. Каждый файл до 20 МБ. Форматы: JPG, PNG, GIF, WEBP
             </small>
             <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
-                ⚠️ Если общий размер всех файлов превышает лимит сервера, загрузка не произойдет. 
+                <i class="bi bi-exclamation-triangle"></i> Если общий размер всех файлов превышает лимит сервера, загрузка не произойдет. 
                 Рекомендуется загружать изображения по одному или уменьшить их размер.
             </small>
         </div>

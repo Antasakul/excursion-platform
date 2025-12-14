@@ -50,12 +50,9 @@ function parseSize(string $size): int
 
 function redirectToDashboard(): void
 {
-    $userType = $_SESSION['user_type'] ?? 'guide';
-    if($userType === 'guide') {
-        header('Location: ' . route_path('pages/guide/dashboard.php'));
-    } else {
-        header('Location: ' . route_path('pages/customer/dashboard.php'));
-    }
+    require_once __DIR__ . '/redirect_helper.php';
+    $redirectUrl = getRedirectUrl();
+    header('Location: ' . $redirectUrl);
     exit();
 }
 

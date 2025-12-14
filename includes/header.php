@@ -11,6 +11,7 @@ require_once __DIR__ . '/../config/app.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Платформа частных экскурсий</title>
     <link rel="stylesheet" href="<?php echo asset_path('css/style.css'); ?>">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body>
     <nav class="navbar">
@@ -24,10 +25,8 @@ require_once __DIR__ . '/../config/app.php';
                 <?php if(isset($_SESSION['user_id'])): ?>
                     <?php if($_SESSION['user_type'] === 'admin'): ?>
                         <a href="<?php echo route_path('pages/admin/dashboard.php'); ?>">Админ</a>
-                    <?php elseif($_SESSION['user_type'] === 'guide'): ?>
-                        <a href="<?php echo route_path('pages/guide/dashboard.php'); ?>">Личный кабинет</a>
                     <?php else: ?>
-                        <a href="<?php echo route_path('pages/customer/dashboard.php'); ?>">Личный кабинет</a>
+                        <a href="<?php echo route_path('pages/dashboard.php'); ?>">Личный кабинет</a>
                     <?php endif; ?>
                     <span style="color: white;">Привет, <?php echo htmlspecialchars($_SESSION['full_name']); ?>!</span>
                     <a href="<?php echo route_path('includes/auth.php'); ?>?action=logout">Выйти</a>

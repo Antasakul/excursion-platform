@@ -72,10 +72,8 @@ if(isset($_POST['login'])) {
             $_SESSION['success'] = "Добро пожаловать, " . $user['full_name'] . "!";
             if($user['user_type'] === 'admin') {
                 header('Location: ' . route_path('pages/admin/dashboard.php'));
-            } elseif($user['user_type'] === 'guide') {
-                header('Location: ' . route_path('pages/guide/dashboard.php'));
             } else {
-                header('Location: ' . route_path('pages/customer/dashboard.php'));
+                header('Location: ' . route_path('pages/dashboard.php'));
             }
             exit();
             

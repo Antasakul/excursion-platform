@@ -11,6 +11,13 @@ if(!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Только клиенты могут бронировать экскурсии
+if($_SESSION['user_type'] !== 'customer') {
+    $_SESSION['error'] = "Бронирование экскурсий доступно только для клиентов";
+    header('Location: ' . route_path('pages/excursions.php'));
+    exit();
+}
+
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customer_id = $_SESSION['user_id'];
     $excursion_date_id = $_POST['excursion_date_id'] ?? null;
@@ -114,16 +121,23 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Используем redirect_helper для остаться на текущей странице
+require_once __DIR__ . '/redirect_helper.php';
+
 $redirectExcursionId = $_POST['excursion_id'] ?? '';
-$userType = $_SESSION['user_type'] ?? 'customer';
+// Если есть excursion_id, пытаемся вернуться на booking.php
 if(!empty($redirectExcursionId)) {
-    $redirectUrl = route_path('pages/booking.php') . '?excursion_id=' . urlencode($redirectExcursionId);
-} else {
-    if($userType === 'guide') {
-        $redirectUrl = route_path('pages/guide/dashboard.php');
+    $bookingUrl = route_path('pages/booking.php') . '?excursion_id=' . urlencode($redirectExcursionId);
+    // Проверяем HTTP_REFERER - если мы на booking.php, остаемся там
+    if(isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'booking.php') !== false) {
+        $redirectUrl = $bookingUrl;
     } else {
-        $redirectUrl = route_path('pages/customer/dashboard.php');
+        // Используем redirect_helper, который вернет HTTP_REFERER если есть, иначе booking.php
+        $redirectUrl = getRedirectUrl($bookingUrl);
     }
+} else {
+    // Используем redirect_helper для остаться на текущей странице
+    $redirectUrl = getRedirectUrl();
 }
 
 header('Location: ' . $redirectUrl);

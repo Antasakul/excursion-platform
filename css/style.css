@@ -8,6 +8,7 @@
     --primary-color: #FF5A5F;
     --primary-hover: #E04A4F;
     --secondary-color: #00A699;
+    --
     --text-dark: #2C3E50;
     --text-light: #7F8C8D;
     --bg-light: #F7F7F7;
@@ -106,23 +107,75 @@ body {
 
 /* Главная секция / Hero */
 .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 80px 0;
     text-align: center;
     position: relative;
     overflow: hidden;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-light);
 }
 
-.hero::before {
-    content: '';
+.hero-carousel {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    opacity: 0.3;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.carousel-track {
+    display: flex;
+    height: 100%;
+    transition: transform 1s ease-in-out;
+    will-change: transform;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.carousel-slide {
+    flex: 0 0 25%;
+    width: 25%;
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.hero .container {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-text-wrapper {
+    padding: 40px 60px;
+    display: inline-block;
+    max-width: 800px;
+    position: relative;
+    text-align: center;
 }
 
 .hero h1 {
@@ -130,23 +183,71 @@ body {
     margin-bottom: 16px;
     font-weight: 700;
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+    color: white;
 }
 
 .hero p {
     font-size: 20px;
     margin-bottom: 32px;
-    opacity: 0.95;
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    color: white;
+}
+
+.hero-search-container {
+    margin-top: 24px;
+}
+
+.hero-search-form {
+    display: flex;
+    gap: 12px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hero-search-input {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 500;
+    outline: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.2s ease;
+    height: 48px;
+    box-sizing: border-box;
+}
+
+.hero-search-input:focus {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.hero-search-btn {
+    padding: 14px 28px;
+    border-radius: 50px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    box-sizing: border-box;
+    font-size: 16px;
 }
 
 /* Кнопки в стиле GetYourGuide */
 .btn {
-    display: inline-block;
+    
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 14px 28px;
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
     font-size: 16px;
@@ -154,6 +255,9 @@ body {
     transition: all 0.2s ease;
     text-align: center;
     line-height: 1.5;
+    height: 48px;
+    box-sizing: border-box;
+    gap: 8px;
 }
 
 .btn-primary {
@@ -178,6 +282,13 @@ body {
     background: #008B7F;
     box-shadow: 0 4px 12px rgba(0, 166, 153, 0.4);
     transform: translateY(-1px);
+}
+
+.btn-large {
+    width: 100%;
+    padding: 14px 28px;
+    font-size: 16px;
+    height: 48px;
 }
 
 .btn-large {
@@ -258,6 +369,55 @@ body {
     color: var(--text-light);
     font-size: 14px;
     margin: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-content .city i,
+.card-content .price i {
+    color: var(--primary-color);
+}
+
+.card-content .category i,
+.card-content .guide i,
+.card-content .duration i {
+    color: var(--text-light);
+    margin-right: 4px;
+}
+
+.card-content .btn {
+    width: 100%;
+    margin-top: 12px;
+    justify-content: center;
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.card-actions .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.star i {
+    color: #FBBF24;
+}
+
+.star:not(.filled) i {
+    color: #E0E0E0;
+}
+
+.btn-favorite i {
+    font-size: 1.2rem;
+}
+
+.btn-favorite.active i {
+    color: var(--primary-color);
 }
 
 .card-content .status {
@@ -281,7 +441,7 @@ body {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .form-group label {
@@ -290,18 +450,61 @@ body {
     font-weight: 600;
     color: var(--text-dark);
     font-size: 14px;
+    line-height: 1.5;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-light);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: 12px 16px;
+    padding: 14px 24px;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
+    border-radius: 50px;
     font-size: 16px;
+    font-weight: 500;
     transition: all 0.2s ease;
     font-family: inherit;
+    height: 48px;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    border-radius: 20px;
+    min-height: 120px;
+    height: auto;
+    resize: vertical;
+}
+
+.form-group .promo-code-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.form-group .promo-code-wrapper input {
+    flex: 1;
+}
+
+.form-group .promo-code-wrapper .btn {
+    flex-shrink: 0;
+}
+
+.booking-form .btn:not(.promo-code-wrapper .btn) {
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+.booking-form .btn-large {
+    width: 100%;
+    margin-top: 0;
 }
 
 .form-group input:focus,
@@ -341,14 +544,17 @@ body {
 .filters select,
 .filters-row input,
 .filters-row select {
-    padding: 12px 16px;
+    padding: 14px 24px;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    font-size: 15px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 500;
     background: var(--bg-white);
     transition: all 0.2s ease;
     flex: 1;
     min-width: 200px;
+    height: 48px;
+    box-sizing: border-box;
 }
 
 .filters input:focus,
@@ -414,6 +620,19 @@ body {
 .feature-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-md);
+}
+
+.feature-card h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.feature-card h3 i {
+    color: var(--primary-color);
+    font-size: 24px;
 }
 
 /* Личный кабинет */
@@ -607,8 +826,37 @@ body {
 .price-details p {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin: 12px 0;
     font-size: 15px;
+    line-height: 1.5;
+}
+
+.price-details p {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.price-details p span {
+    min-width: 80px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.price-details p .currency {
+    min-width: auto;
+    text-align: left;
+}
+
+.favorite-section {
+    margin-top: 24px;
+}
+
+.favorite-section .btn {
+    width: 100%;
+    height: 48px;
 }
 
 .total-price {
@@ -618,6 +866,24 @@ body {
     padding-top: 16px;
     margin-top: 16px;
     color: var(--primary-color);
+}
+
+.total-price {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.total-price span {
+    min-width: 80px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.total-price .currency {
+    min-width: auto;
+    text-align: left;
 }
 
 /* Отзывы */
@@ -790,6 +1056,33 @@ section {
     .hero p {
         font-size: 18px;
     }
+    
+    .hero-text-wrapper {
+        padding: 30px 40px;
+        max-width: 90%;
+    }
+    
+    .hero-search-form {
+        flex-direction: column;
+        max-width: 100%;
+    }
+    
+    .hero-search-input {
+        width: 100%;
+    }
+    
+    .hero-search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .form-group .promo-code-wrapper {
+        flex-direction: column;
+    }
+    
+    .form-group .promo-code-wrapper .btn {
+        width: 100%;
+    }
 }
 
 @media (max-width: 768px) {
@@ -840,6 +1133,7 @@ section {
     
     .hero {
         padding: 48px 0;
+        min-height: 400px;
     }
     
     .hero h1 {
@@ -847,7 +1141,26 @@ section {
     }
     
     .hero p {
-        font-size: 16px;
+        font-size: 18px;
+    }
+    
+    .hero-text-wrapper {
+        padding: 24px 20px;
+        max-width: 95%;
+    }
+    
+    .hero-search-form {
+        flex-direction: column;
+    }
+    
+    .hero-search-input {
+        font-size: 14px;
+        padding: 14px 20px;
+    }
+    
+    .hero-search-btn {
+        padding: 14px 24px;
+        font-size: 14px;
     }
     
     .container {

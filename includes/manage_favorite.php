@@ -11,6 +11,14 @@ if(!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Только клиенты могут добавлять в избранное
+if($_SESSION['user_type'] !== 'customer') {
+    $_SESSION['error'] = "Добавление в избранное доступно только для клиентов";
+    $referer = $_SERVER['HTTP_REFERER'] ?? route_path('pages/excursions.php');
+    header('Location: ' . $referer);
+    exit();
+}
+
 if(isset($_POST['action']) && isset($_POST['excursion_id'])) {
     $user_id = $_SESSION['user_id'];
     $excursion_id = (int)$_POST['excursion_id'];

@@ -82,6 +82,9 @@ try {
     $_SESSION['error'] = 'Ошибка: ' . $e->getMessage();
 }
 
-header('Location: ' . route_path('pages/admin/dashboard.php'));
+// Используем redirect_helper для остаться на текущей странице
+require_once __DIR__ . '/redirect_helper.php';
+$redirectUrl = getRedirectUrl();
+header('Location: ' . $redirectUrl);
 exit();
 

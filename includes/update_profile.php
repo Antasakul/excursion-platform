@@ -24,12 +24,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$email, $user_id]);
         if($stmt->fetch()) {
             $_SESSION['error'] = "Этот email уже используется другим пользователем";
-            $userType = $_SESSION['user_type'] ?? 'customer';
-            if($userType === 'guide') {
-                header('Location: ' . route_path('pages/guide/dashboard.php'));
-            } else {
-                header('Location: ' . route_path('pages/customer/dashboard.php'));
-            }
+            require_once __DIR__ . '/redirect_helper.php';
+            $redirectUrl = getRedirectUrl();
+            header('Location: ' . $redirectUrl);
             exit();
         }
 
@@ -43,19 +40,25 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$full_name, $email, $phone, $user_id]);
         }
 
+        // Получаем обновленные данные пользователя
+        $stmt = $pdo->prepare("SELECT avatar_url FROM users WHERE id = ?");
+        $stmt->execute([$user_id]);
+        $updated_user = $stmt->fetch();
+        
         $_SESSION['success'] = "Профиль успешно обновлен";
         $_SESSION['full_name'] = $full_name;
+        if($updated_user && $updated_user['avatar_url']) {
+            $_SESSION['avatar_url'] = $updated_user['avatar_url'];
+        }
         
     } catch(PDOException $e) {
         $_SESSION['error'] = "Ошибка обновления профиля: " . $e->getMessage();
     }
 }
 
-$userType = $_SESSION['user_type'] ?? 'customer';
-if($userType === 'guide') {
-    header('Location: ' . route_path('pages/guide/dashboard.php'));
-} else {
-    header('Location: ' . route_path('pages/customer/dashboard.php'));
-}
+// Перенаправляем на предыдущую страницу
+require_once __DIR__ . '/redirect_helper.php';
+$redirectUrl = getRedirectUrl();
+header('Location: ' . $redirectUrl);
 exit();
 ?>

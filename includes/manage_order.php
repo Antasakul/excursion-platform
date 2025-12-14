@@ -77,11 +77,9 @@ if(isset($_GET['action']) && isset($_GET['id'])) {
     }
 }
 
-// Перенаправляем в зависимости от роли
-if($user_type == 'guide') {
-    header('Location: ' . (function_exists('route_path') ? route_path('pages/guide/dashboard.php') : '../pages/guide/dashboard.php'));
-} else {
-    header('Location: ' . (function_exists('route_path') ? route_path('pages/customer/dashboard.php') : '../pages/customer/dashboard.php'));
-}
+// Перенаправляем на предыдущую страницу
+require_once __DIR__ . '/redirect_helper.php';
+$redirectUrl = getRedirectUrl();
+header('Location: ' . $redirectUrl);
 exit();
 ?>

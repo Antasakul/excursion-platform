@@ -41,18 +41,15 @@ function getOrderStatus($order) {
 }
 ?>
 
-<div class="container">
-    <h1>Личный кабинет гида</h1>
-    <p>Добро пожаловать, <strong><?php echo htmlspecialchars($_SESSION['full_name']); ?></strong>!</p>
-    
+<div class="dashboard-container">
     <?php if(isset($_SESSION['success'])): ?>
-        <div class="alert alert-success" style="background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <div class="alert alert-success">
             <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
         </div>
     <?php endif; ?>
     
     <?php if(isset($_SESSION['error'])): ?>
-        <div class="alert alert-error" style="background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <div class="alert alert-error">
             <strong>Ошибка:</strong> <?php echo htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
         </div>
     <?php endif; ?>
@@ -65,31 +62,123 @@ function getOrderStatus($order) {
 
     <!-- Вкладка профиля -->
     <div id="profile" class="tab-content active">
-        <h2>Настройки профиля</h2>
-        <?php
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $user = $stmt->fetch();
-        ?>
-        <form method="POST" action="<?php echo route_path('includes/update_profile.php'); ?>" class="profile-form">
-            <div class="form-group">
-                <label>Полное имя:</label>
-                <input type="text" name="full_name" value="<?php echo $user['full_name']; ?>" required>
+        <div class="profile-layout">
+            <!-- Левая панель профиля -->
+            <div class="profile-sidebar">
+                <div class="profile-card">
+                    <?php
+                    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+                    $stmt->execute([$user_id]);
+                    $user = $stmt->fetch();
+                    $avatarUrl = $user['avatar_url'] ?? null;
+                    
+                    // Получаем статистику
+                    $excursionsCount = $pdo->prepare("SELECT COUNT(*) as count FROM excursions WHERE guide_id = ?");
+                    $excursionsCount->execute([$user_id]);
+                    $excursionsTotal = $excursionsCount->fetch()['count'];
+                    
+                    $ordersCount = $pdo->prepare("SELECT COUNT(*) as count FROM orders o JOIN excursion_dates ed ON o.excursion_date_id = ed.id JOIN excursions e ON ed.excursion_id = e.id WHERE e.guide_id = ?");
+                    $ordersCount->execute([$user_id]);
+                    $ordersTotal = $ordersCount->fetch()['count'];
+                    
+                    $completedCount = $pdo->prepare("SELECT COUNT(*) as count FROM orders o JOIN excursion_dates ed ON o.excursion_date_id = ed.id JOIN excursions e ON ed.excursion_id = e.id WHERE e.guide_id = ? AND o.status = 'completed'");
+                    $completedCount->execute([$user_id]);
+                    $completedTotal = $completedCount->fetch()['count'];
+                    ?>
+                    
+                    <div class="profile-avatar">
+                        <?php if($avatarUrl): ?>
+                            <img src="<?php echo asset_path($avatarUrl); ?>" alt="Аватар" class="avatar-large">
+                        <?php else: ?>
+                            <div class="avatar-large-placeholder">
+                                <i class="bi bi-person"></i>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <h2 class="profile-name"><?php echo htmlspecialchars($user['full_name']); ?></h2>
+                    <p class="profile-role">Гид</p>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-number"><?php echo $excursionsTotal; ?></span>
+                            <span class="stat-label">Экскурсий</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <span class="stat-number"><?php echo $ordersTotal; ?></span>
+                            <span class="stat-label">Бронирований</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <span class="stat-number"><?php echo $completedTotal; ?></span>
+                            <span class="stat-label">Завершено</span>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="<?php echo route_path('includes/upload_avatar.php'); ?>" enctype="multipart/form-data" class="avatar-upload-form">
+                        <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" style="display: none;" onchange="previewAvatar(this)">
+                        <label for="avatarInput" class="btn-upload-avatar">
+                            <i class="bi bi-camera"></i> Загрузить новое фото
+                        </label>
+                        <button type="submit" style="display: none;" id="submitAvatar"></button>
+                    </form>
+                    
+                    <?php if($user['phone']): ?>
+                        <div class="profile-location">
+                            <i class="bi bi-telephone"></i> <?php echo htmlspecialchars($user['phone']); ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="profile-location">
+                        <i class="bi bi-envelope"></i> <?php echo htmlspecialchars($user['email']); ?>
+                    </div>
+                    
+                    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                        <form method="POST" action="<?php echo route_path('includes/delete_account.php'); ?>" onsubmit="return confirm('Вы уверены, что хотите удалить свой аккаунт? Это действие нельзя отменить. Все ваши данные будут удалены, включая все созданные экскурсии.');">
+                            <button type="submit" name="confirm_delete" class="btn-delete-account" style="width: 100%; padding: 12px 24px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                                <i class="bi bi-trash"></i> Удалить аккаунт
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Email:</label>
-                <input type="email" name="email" value="<?php echo $user['email']; ?>" required>
+            
+            <!-- Правая панель редактирования -->
+            <div class="profile-edit-panel">
+                <div class="edit-panel-header">
+                    <h2>ОСНОВНАЯ ИНФОРМАЦИЯ</h2>
+                    <div class="edit-actions">
+                        <button type="button" class="btn-cancel" onclick="resetForm()">Отмена</button>
+                        <button type="submit" form="profileForm" class="btn-save">Сохранить</button>
+                    </div>
+                </div>
+                
+                <form method="POST" action="<?php echo route_path('includes/update_profile.php'); ?>" id="profileForm" class="profile-edit-form">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label>ИМЯ</label>
+                            <input type="text" name="full_name" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label>EMAIL</label>
+                            <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label>ТЕЛЕФОН</label>
+                            <input type="tel" name="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label>НОВЫЙ ПАРОЛЬ</label>
+                            <input type="password" name="new_password" placeholder="Оставьте пустым, если не меняете">
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label>Телефон:</label>
-                <input type="tel" name="phone" value="<?php echo $user['phone']; ?>">
-            </div>
-            <div class="form-group">
-                <label>Новый пароль (оставьте пустым, если не меняете):</label>
-                <input type="password" name="new_password">
-            </div>
-            <button type="submit" class="btn btn-primary">Обновить профиль</button>
-        </form>
+        </div>
     </div>
 
     <!-- Вкладка моих экскурсий -->
@@ -106,7 +195,7 @@ function getOrderStatus($order) {
             <div class="excursion-card">
                 <div class="card-content">
                     <h3><?php echo htmlspecialchars($excursion['title']); ?></h3>
-                    <p class="price">💰 <?php echo $excursion['price']; ?> руб.</p>
+                    <p class="price"><i class="bi bi-currency-exchange"></i> <?php echo $excursion['price']; ?> руб.</p>
                     <p class="status">Статус: <?php echo $excursion['is_active'] ? 'Активна' : 'Неактивна'; ?></p>
                     <div class="card-actions">
                         <a href="<?php echo route_path('pages/edit_excursion.php'); ?>?id=<?php echo $excursion['id']; ?>" class="btn btn-secondary">Редактировать</a>
@@ -151,10 +240,10 @@ function getOrderStatus($order) {
                 </p>
                 <div class="order-actions">
                     <?php if($order['status'] == 'pending'): ?>
-                        <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=confirm&id=<?php echo $order['id']; ?>" class="btn btn-success">Подтвердить</a>
-                        <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=cancel&id=<?php echo $order['id']; ?>" class="btn btn-danger">Отклонить</a>
+                        <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=confirm&id=<?php echo $order['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/guide/dashboard.php')); ?>" class="btn btn-success">Подтвердить</a>
+                        <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=cancel&id=<?php echo $order['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/guide/dashboard.php')); ?>" class="btn btn-danger">Отклонить</a>
                     <?php elseif($order['status'] == 'confirmed'): ?>
-                        <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=complete&id=<?php echo $order['id']; ?>" class="btn btn-primary">Завершить</a>
+                        <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=complete&id=<?php echo $order['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/guide/dashboard.php')); ?>" class="btn btn-primary">Завершить</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -181,8 +270,344 @@ function openTab(tabName) {
     document.getElementById(tabName).classList.add('active');
     event.currentTarget.classList.add('active');
 }
+
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.querySelector('.avatar-large');
+            const placeholder = document.querySelector('.avatar-large-placeholder');
+            if (preview) {
+                preview.src = e.target.result;
+            } else if (placeholder) {
+                placeholder.innerHTML = '<img src="' + e.target.result + '" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
+                placeholder.classList.remove('avatar-large-placeholder');
+                placeholder.classList.add('avatar-large');
+            }
+            document.getElementById('submitAvatar').click();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function resetForm() {
+    const form = document.getElementById('profileForm');
+    form.reset();
+    location.reload();
+}
 </script>
 
+<style>
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.dashboard-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.profile-sidebar {
+    position: sticky;
+    top: 24px;
+}
+
+.profile-card {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.profile-avatar {
+    margin-bottom: 24px;
+}
+
+.avatar-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--border-color);
+    margin: 0 auto;
+    display: block;
+}
+
+.avatar-large-placeholder {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    border: 4px solid var(--border-color);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    color: white;
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 8px 0;
+}
+
+.profile-role {
+    font-size: 14px;
+    color: var(--text-light);
+    margin: 0 0 24px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 24px 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin: 24px 0;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 40px;
+    background: var(--border-color);
+}
+
+.btn-upload-avatar {
+    width: 100%;
+    padding: 12px 24px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.btn-upload-avatar:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.profile-location {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-light);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.profile-bio {
+    text-align: left;
+    color: var(--text-light);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.profile-edit-panel {
+    background: var(--bg-white);
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+
+.edit-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.edit-panel-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-cancel {
+    padding: 10px 24px;
+    background: var(--bg-white);
+    color: var(--text-dark);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+    border-color: var(--text-light);
+    background: var(--bg-light);
+}
+
+.btn-save {
+    padding: 10px 24px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-save:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.profile-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    background: var(--bg-white);
+    color: var(--text-dark);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+@media (max-width: 1024px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-sidebar {
+        position: static;
+    }
+    
+    .form-row-2 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
 <?php require_once base_path('includes/footer.php'); ?>
+
 
 

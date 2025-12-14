@@ -16,11 +16,11 @@ if(isset($_SESSION['user_id'])) {
 
 // Получаем экскурсии
 $stmt = $pdo->query("
-    SELECT e.*, u.full_name as guide_name 
-    FROM excursions e 
-    JOIN users u ON e.guide_id = u.id 
-    WHERE e.is_active = TRUE 
-    ORDER BY e.created_at DESC
+            SELECT e.*, u.full_name as guide_name, u.avatar_url as guide_avatar 
+            FROM excursions e 
+            JOIN users u ON e.guide_id = u.id 
+            WHERE e.is_active = TRUE 
+            ORDER BY e.created_at DESC
 ");
 $excursions = $stmt->fetchAll();
 
@@ -42,56 +42,121 @@ require_once base_path('includes/header.php');
         </div>
     <?php endif; ?>
     
-    <div class="filters-section">
-        <div class="filters-row">
-            <input type="text" id="searchInput" placeholder="Поиск по названию или описанию...">
-            
-            <select id="cityFilter">
-                <option value="">Все города</option>
-                <?php
-                $cities = $pdo->query("SELECT DISTINCT city FROM excursions WHERE is_active = TRUE ORDER BY city")->fetchAll();
-                foreach($cities as $city): ?>
-                    <option value="<?php echo htmlspecialchars($city['city']); ?>"><?php echo htmlspecialchars($city['city']); ?></option>
-                <?php endforeach; ?>
-            </select>
-            
-            <select id="categoryFilter">
-                <option value="">Все категории</option>
-                <?php
-                $categories = $pdo->query("SELECT DISTINCT category FROM excursions WHERE is_active = TRUE ORDER BY category")->fetchAll();
-                foreach($categories as $cat): ?>
-                    <option value="<?php echo htmlspecialchars($cat['category']); ?>"><?php echo htmlspecialchars($cat['category']); ?></option>
-                <?php endforeach; ?>
-            </select>
-            
-            <select id="sortBy">
-                <option value="date_desc">Сначала новые</option>
-                <option value="date_asc">Сначала старые</option>
-                <option value="price_asc">Цена: по возрастанию</option>
-                <option value="price_desc">Цена: по убыванию</option>
-                <option value="title_asc">По алфавиту (А-Я)</option>
-                <option value="title_desc">По алфавиту (Я-А)</option>
-                <option value="duration_asc">Длительность: короткие</option>
-                <option value="duration_desc">Длительность: длинные</option>
-            </select>
+    <div class="filters-toggle-wrapper">
+        <button class="filters-toggle-btn" id="filtersToggleBtn" onclick="toggleFilters()">
+            <i class="bi bi-funnel"></i> Фильтры экскурсий
+            <i class="bi bi-chevron-down" id="filtersToggleIcon"></i>
+        </button>
+    </div>
+    
+    <div class="filters-card" id="filtersCard" style="display: none;">
+        <div class="filters-header">
+            <h2><i class="bi bi-funnel"></i> Фильтры экскурсий</h2>
+            <p>Найдите идеальную экскурсию с помощью нашей системы фильтрации</p>
+            <button class="filters-close-btn" onclick="closeFilters()" title="Закрыть">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
         
-        <div class="filters-row">
-            <label>
-                Цена от: <input type="number" id="priceMin" min="0" placeholder="0" style="width:100px;">
-            </label>
-            <label>
-                до: <input type="number" id="priceMax" min="0" placeholder="∞" style="width:100px;">
-            </label>
+        <div class="filters-content">
+            <!-- Поиск по названию -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="bi bi-search"></i> Поиск экскурсий
+                </label>
+                <div class="search-input-wrapper">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск по названию или описанию..." class="filter-input">
+                </div>
+            </div>
             
-            <label>
-                Длительность от: <input type="number" id="durationMin" min="0" placeholder="0" style="width:100px;"> мин
-            </label>
-            <label>
-                до: <input type="number" id="durationMax" min="0" placeholder="∞" style="width:100px;"> мин
-            </label>
+            <!-- Город и Категория -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="bi bi-geo-alt"></i> Город
+                    </label>
+                    <select id="cityFilter" class="filter-select">
+                        <option value="">Все города</option>
+                        <?php
+                        $cities = $pdo->query("SELECT DISTINCT city FROM excursions WHERE is_active = TRUE ORDER BY city")->fetchAll();
+                        foreach($cities as $city): ?>
+                            <option value="<?php echo htmlspecialchars($city['city']); ?>"><?php echo htmlspecialchars($city['city']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="bi bi-tag"></i> Категория
+                    </label>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">Все категории</option>
+                        <?php
+                        $categories = $pdo->query("SELECT DISTINCT category FROM excursions WHERE is_active = TRUE ORDER BY category")->fetchAll();
+                        foreach($categories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat['category']); ?>"><?php echo htmlspecialchars($cat['category']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
             
-            <button id="resetFilters" class="btn btn-secondary">Сбросить фильтры</button>
+            <!-- Цена -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="bi bi-currency-exchange"></i> Диапазон цены
+                </label>
+                <div class="price-range">
+                    <div class="range-input-wrapper">
+                        <input type="number" id="priceMin" min="0" placeholder="От" class="filter-input range-input">
+                        <span class="range-separator">—</span>
+                        <input type="number" id="priceMax" min="0" placeholder="До" class="filter-input range-input">
+                        <span class="range-currency">руб.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Длительность -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="bi bi-clock"></i> Длительность экскурсии
+                </label>
+                <div class="duration-range">
+                    <div class="range-input-wrapper">
+                        <input type="number" id="durationMin" min="0" placeholder="От" class="filter-input range-input">
+                        <span class="range-separator">—</span>
+                        <input type="number" id="durationMax" min="0" placeholder="До" class="filter-input range-input">
+                        <span class="range-currency">мин.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Сортировка -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="bi bi-sort-down"></i> Сортировка
+                </label>
+                <select id="sortBy" class="filter-select">
+                    <option value="date_desc">Сначала новые</option>
+                    <option value="date_asc">Сначала старые</option>
+                    <option value="price_asc">Цена: по возрастанию</option>
+                    <option value="price_desc">Цена: по убыванию</option>
+                    <option value="title_asc">По алфавиту (А-Я)</option>
+                    <option value="title_desc">По алфавиту (Я-А)</option>
+                    <option value="duration_asc">Длительность: короткие</option>
+                    <option value="duration_desc">Длительность: длинные</option>
+                </select>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div class="filters-actions">
+                <button id="resetFilters" class="btn btn-primary">
+                    <i class="bi bi-arrow-counterclockwise"></i> Сбросить фильтры
+                </button>
+                 <button id="applyFilters" class="btn btn-secondary">
+                    <i class="bi bi-check-circle"></i> Применить фильтры
+                </button>
+            </div>
         </div>
     </div>
 
@@ -114,7 +179,7 @@ require_once base_path('includes/header.php');
                     <input type="hidden" name="excursion_id" value="<?php echo $excursion['id']; ?>">
                     <input type="hidden" name="action" value="<?php echo $isFavorite ? 'remove' : 'add'; ?>">
                     <button type="submit" class="btn-favorite <?php echo $isFavorite ? 'active' : ''; ?>" title="<?php echo $isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'; ?>">
-                        <?php echo $isFavorite ? '❤️' : '🤍'; ?>
+                        <i class="bi <?php echo $isFavorite ? 'bi-heart-fill' : 'bi-heart'; ?>"></i>
                     </button>
                 </form>
             <?php endif; ?>
@@ -126,12 +191,17 @@ require_once base_path('includes/header.php');
             <div class="card-content">
                 <h3><?php echo htmlspecialchars($excursion['title']); ?></h3>
                 <p class="description"><?php echo htmlspecialchars($excursion['short_description']); ?></p>
-                <p class="city">📍 <?php echo htmlspecialchars($excursion['city']); ?></p>
-                <p class="category">🏷️ <?php echo htmlspecialchars($excursion['category']); ?></p>
-                <p class="guide">👤 Гид: <?php echo htmlspecialchars($excursion['guide_name']); ?></p>
-                <p class="duration">⏱️ <?php echo $excursion['duration']; ?> мин.</p>
-                <p class="price">💰 <?php echo number_format($excursion['price'], 2); ?> руб./чел.</p>
-                <a href="<?php echo route_path('pages/booking.php'); ?>?excursion_id=<?php echo $excursion['id']; ?>" class="btn btn-primary">Подробнее и забронировать</a>
+                <p class="city"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($excursion['city']); ?></p>
+                <p class="category"><i class="bi bi-tag"></i> <?php echo htmlspecialchars($excursion['category']); ?></p>
+                <p class="guide" style="display: flex; align-items: center; gap: 8px;">
+                    <?php if($excursion['guide_avatar']): ?>
+                        <img src="<?php echo asset_path($excursion['guide_avatar']); ?>" alt="Аватар гида" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover;">
+                    <?php endif; ?>
+                    <i class="bi bi-person"></i> Гид: <?php echo htmlspecialchars($excursion['guide_name']); ?>
+                </p>
+                <p class="duration"><i class="bi bi-clock"></i> <?php echo $excursion['duration']; ?> мин.</p>
+                <p class="price"><i class="bi bi-currency-exchange"></i> <?php echo number_format($excursion['price'], 2); ?> руб./чел.</p>
+                <a href="<?php echo route_path('pages/booking.php'); ?>?excursion_id=<?php echo $excursion['id']; ?>" class="btn btn-secondary">Подробнее и забронировать</a>
             </div>
         </div>
         <?php endforeach; ?>
@@ -143,39 +213,275 @@ require_once base_path('includes/header.php');
 </div>
 
 <style>
-.filters-section {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
+.filters-toggle-wrapper {
+    margin-bottom: 24px;
 }
 
-.filters-row {
+.filters-toggle-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--bg-white);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
-.filters-row:last-child {
+.filters-toggle-btn:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.filters-toggle-btn i:first-child {
+    color: var(--primary-color);
+    font-size: 18px;
+}
+
+.filters-toggle-btn i:last-child {
+    color: var(--text-light);
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.filters-toggle-btn.active i:last-child {
+    transform: rotate(180deg);
+}
+
+.filters-card {
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: 32px;
+    overflow: hidden;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filters-card.hidden {
+    display: none !important;
+}
+
+.filters-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: white;
+    padding: 24px 32px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.filters-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+    font-size: 18px;
+}
+
+.filters-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.filters-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+}
+
+.filters-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+    color: white;
+}
+
+.filters-content {
+    padding: 32px;
+}
+
+.filter-group {
+    margin-bottom: 24px;
+}
+
+.filter-group:last-of-type {
     margin-bottom: 0;
 }
 
-.filters-row input[type="text"],
-.filters-row select {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    flex: 1;
-    min-width: 150px;
-}
-
-.filters-row label {
+.filter-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.filter-label i {
+    color: var(--primary-color);
+    font-size: 16px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input-wrapper i {
+    position: absolute;
+    left: 16px;
+    color: var(--text-light);
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.filter-input {
+    width: 100%;
+    padding: 14px 24px 14px 48px;
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    height: 48px;
+    box-sizing: border-box;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+.filter-select {
+    width: 100%;
+    padding: 14px 24px;
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 500;
+    background: var(--bg-white);
+    transition: all 0.2s ease;
+    height: 48px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.price-range,
+.duration-range {
+    width: 100%;
+}
+
+.range-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.range-input {
+    flex: 1;
+    padding: 14px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    height: 48px;
+    box-sizing: border-box;
+}
+
+.range-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+.range-separator {
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 18px;
+}
+
+.range-currency {
+    color: var(--text-light);
+    font-size: 14px;
     white-space: nowrap;
+    min-width: 45px;
+}
+
+.filters-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.filters-actions .btn {
+    flex: 1;
+    height: 48px;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .filters-actions {
+        flex-direction: column;
+    }
+    
+    .filters-actions .btn {
+        width: 100%;
+    }
 }
 
 .btn-favorite {
@@ -235,14 +541,34 @@ const container = document.getElementById('excursionsContainer');
 const noResults = document.getElementById('noResults');
 
 // Привязываем обработчики
-searchInput.addEventListener('input', filterAndSort);
-cityFilter.addEventListener('change', filterAndSort);
-categoryFilter.addEventListener('change', filterAndSort);
-sortBy.addEventListener('change', filterAndSort);
-priceMin.addEventListener('input', filterAndSort);
-priceMax.addEventListener('input', filterAndSort);
-durationMin.addEventListener('input', filterAndSort);
-durationMax.addEventListener('input', filterAndSort);
+const applyFiltersBtn = document.getElementById('applyFilters');
+let filterTimeout;
+
+// Функция для применения фильтров с небольшой задержкой
+function applyFilters() {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(filterAndSort, 300);
+}
+
+// Автоматическое применение при изменении (с задержкой)
+searchInput.addEventListener('input', applyFilters);
+cityFilter.addEventListener('change', applyFilters);
+categoryFilter.addEventListener('change', applyFilters);
+sortBy.addEventListener('change', applyFilters);
+priceMin.addEventListener('input', applyFilters);
+priceMax.addEventListener('input', applyFilters);
+durationMin.addEventListener('input', applyFilters);
+durationMax.addEventListener('input', applyFilters);
+
+// Явное применение по кнопке
+applyFiltersBtn.addEventListener('click', () => {
+    clearTimeout(filterTimeout);
+    filterAndSort();
+    // Закрываем фильтры после применения
+    setTimeout(() => {
+        closeFilters();
+    }, 300);
+});
 
 resetBtn.addEventListener('click', () => {
     searchInput.value = '';
@@ -253,6 +579,7 @@ resetBtn.addEventListener('click', () => {
     priceMax.value = '';
     durationMin.value = '';
     durationMax.value = '';
+    clearTimeout(filterTimeout);
     filterAndSort();
 });
 
@@ -323,6 +650,41 @@ function filterAndSort() {
     // Показываем/скрываем сообщение "ничего не найдено"
     noResults.style.display = visibleCount === 0 ? 'block' : 'none';
 }
+
+// Функции для открытия/закрытия фильтров
+function toggleFilters() {
+    const filtersCard = document.getElementById('filtersCard');
+    const toggleBtn = document.getElementById('filtersToggleBtn');
+    const toggleIcon = document.getElementById('filtersToggleIcon');
+    
+    if (filtersCard.style.display === 'none' || !filtersCard.style.display) {
+        filtersCard.style.display = 'block';
+        toggleBtn.classList.add('active');
+    } else {
+        closeFilters();
+    }
+}
+
+function closeFilters() {
+    const filtersCard = document.getElementById('filtersCard');
+    const toggleBtn = document.getElementById('filtersToggleBtn');
+    const toggleIcon = document.getElementById('filtersToggleIcon');
+    
+    filtersCard.style.display = 'none';
+    toggleBtn.classList.remove('active');
+}
+
+// Закрытие при клике вне блока
+document.addEventListener('click', (e) => {
+    const filtersCard = document.getElementById('filtersCard');
+    const toggleBtn = document.getElementById('filtersToggleBtn');
+    
+    if (filtersCard && filtersCard.style.display !== 'none' && filtersCard.style.display) {
+        if (!filtersCard.contains(e.target) && !toggleBtn.contains(e.target)) {
+            closeFilters();
+        }
+    }
+});
 </script>
 
 <?php require_once base_path('includes/footer.php'); ?>

@@ -30,7 +30,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
 
     if(!$order) {
         $_SESSION['error'] = "Вы можете оставить отзыв только для завершенных заказов";
-        header('Location: ' . route_path('pages/customer/dashboard.php'));
+        require_once __DIR__ . '/redirect_helper.php';
+        $redirectUrl = getRedirectUrl();
+        header('Location: ' . $redirectUrl);
         exit();
     }
 
@@ -69,7 +71,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
             $stmt->execute([$order_id]);
             if($stmt->fetch()) {
                 $_SESSION['error'] = "Вы уже оставили отзыв для этого заказа. Вы можете отредактировать его.";
-                header('Location: ' . route_path('pages/customer/dashboard.php'));
+                require_once __DIR__ . '/redirect_helper.php';
+                $redirectUrl = getRedirectUrl();
+                header('Location: ' . $redirectUrl);
                 exit();
             }
             
@@ -89,6 +93,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
     }
 }
 
-header('Location: ' . route_path('pages/customer/dashboard.php'));
+// Используем redirect_helper для остаться на текущей странице
+require_once __DIR__ . '/redirect_helper.php';
+$redirectUrl = getRedirectUrl();
+header('Location: ' . $redirectUrl);
 exit();
 

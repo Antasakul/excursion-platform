@@ -78,7 +78,37 @@ function getOrderStatus($order) {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$user_id]);
         $user = $stmt->fetch();
+        $avatarUrl = $user['avatar_url'] ?? null;
         ?>
+        
+        <!-- Загрузка фото профиля -->
+        <div class="avatar-upload-section" style="margin-bottom: 32px; padding: 24px; background: var(--bg-white); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+            <h3 style="margin-bottom: 16px;">Фото профиля</h3>
+            <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+                <div style="flex-shrink: 0;">
+                    <?php if($avatarUrl): ?>
+                        <img src="<?php echo asset_path($avatarUrl); ?>" alt="Аватар" class="avatar-preview" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-color);">
+                    <?php else: ?>
+                        <div class="avatar-placeholder" style="width: 120px; height: 120px; border-radius: 50%; background: var(--bg-light); border: 3px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 48px; color: var(--text-light);">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <form method="POST" action="<?php echo route_path('includes/upload_avatar.php'); ?>" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 12px;">
+                        <input type="file" name="avatar" id="avatarInput" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" style="display: none;" onchange="previewAvatar(this)">
+                        <label for="avatarInput" class="btn btn-secondary" style="cursor: pointer; width: auto; display: inline-flex;">
+                            <i class="bi bi-camera"></i> Выбрать фото
+                        </label>
+                        <button type="submit" class="btn btn-primary" style="width: auto;">
+                            <i class="bi bi-upload"></i> Загрузить фото
+                        </button>
+                        <small style="color: var(--text-light); font-size: 13px;">Разрешены: JPG, PNG, GIF, WEBP. Максимальный размер: 5 МБ</small>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
         <form method="POST" action="<?php echo route_path('includes/update_profile.php'); ?>" class="profile-form">
             <div class="form-group">
                 <label>Полное имя:</label>
@@ -115,11 +145,11 @@ function getOrderStatus($order) {
                 <div class="excursion-card">
                     <div class="card-content">
                         <h3><?php echo htmlspecialchars($excursion['title']); ?></h3>
-                        <p class="price">💰 <?php echo $excursion['price']; ?> руб.</p>
+                        <p class="price"><i class="bi bi-currency-exchange"></i> <?php echo $excursion['price']; ?> руб.</p>
                         <p class="status">Статус: <?php echo $excursion['is_active'] ? 'Активна' : 'Неактивна'; ?></p>
                         <div class="card-actions">
                             <a href="<?php echo route_path('pages/edit_excursion.php'); ?>?id=<?php echo $excursion['id']; ?>" class="btn btn-secondary">Редактировать</a>
-                            <a href="<?php echo route_path('includes/manage_excursion.php'); ?>?action=toggle&id=<?php echo $excursion['id']; ?>" 
+                            <a href="<?php echo route_path('includes/manage_excursion.php'); ?>?action=toggle&id=<?php echo $excursion['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/dashboard.php')); ?>" 
                                class="btn <?php echo $excursion['is_active'] ? 'btn-warning' : 'btn-success'; ?>">
                                 <?php echo $excursion['is_active'] ? 'Деактивировать' : 'Активировать'; ?>
                             </a>
@@ -160,10 +190,10 @@ function getOrderStatus($order) {
                     </p>
                     <div class="order-actions">
                         <?php if($order['status'] == 'pending'): ?>
-                            <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=confirm&id=<?php echo $order['id']; ?>" class="btn btn-success">Подтвердить</a>
-                            <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=cancel&id=<?php echo $order['id']; ?>" class="btn btn-danger">Отклонить</a>
+                            <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=confirm&id=<?php echo $order['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/dashboard.php')); ?>" class="btn btn-success">Подтвердить</a>
+                            <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=cancel&id=<?php echo $order['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/dashboard.php')); ?>" class="btn btn-danger">Отклонить</a>
                         <?php elseif($order['status'] == 'confirmed'): ?>
-                            <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=complete&id=<?php echo $order['id']; ?>" class="btn btn-primary">Завершить</a>
+                            <a href="<?php echo route_path('includes/manage_order.php'); ?>?action=complete&id=<?php echo $order['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/dashboard.php')); ?>" class="btn btn-primary">Завершить</a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -239,17 +269,17 @@ function getOrderStatus($order) {
                     
                     <div class="order-actions" style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <?php if($can_cancel): ?>
-                            <a href="<?php echo route_path('includes/cancel_order.php'); ?>?order_id=<?php echo $order['id']; ?>" 
+                            <a href="<?php echo route_path('includes/cancel_order.php'); ?>?order_id=<?php echo $order['id']; ?>&redirect=<?php echo urlencode($_SERVER['REQUEST_URI'] ?? route_path('pages/dashboard.php')); ?>" 
                                class="btn btn-danger" 
                                onclick="return confirm('Вы уверены, что хотите отменить бронирование? Места будут возвращены.')">
-                               ❌ Отменить бронь
+                               <i class="bi bi-x-circle"></i> Отменить бронь
                             </a>
                         <?php elseif($order['status'] !== 'cancelled' && $order['status'] !== 'completed'): ?>
-                            <small style="color: #888;">⚠️ Отмена возможна не менее чем за 48 часов до начала экскурсии</small>
+                            <small style="color: #888;"><i class="bi bi-exclamation-triangle"></i> Отмена возможна не менее чем за 48 часов до начала экскурсии</small>
                         <?php endif; ?>
                         
                         <a href="<?php echo route_path('pages/booking.php'); ?>?excursion_id=<?php echo $order['excursion_id']; ?>" class="btn btn-secondary">
-                            📄 Посмотреть экскурсию
+                            <i class="bi bi-file-text"></i> Посмотреть экскурсию
                         </a>
                     </div>
                     
@@ -258,11 +288,11 @@ function getOrderStatus($order) {
                         <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
                             <?php if($review): ?>
                                 <div style="background: #e8f5e9; padding: 1rem; border-radius: 4px;">
-                                    <h5>✅ Ваш отзыв:</h5>
+                                    <h5><i class="bi bi-check-circle"></i> Ваш отзыв:</h5>
                                     <div style="margin: 0.5rem 0;">
                                         <strong>Оценка экскурсии:</strong>
                                         <?php for($i = 1; $i <= 5; $i++): ?>
-                                            <span style="font-size: 1.2rem;"><?php echo $i <= $review['rating'] ? '⭐' : '☆'; ?></span>
+                                            <span style="font-size: 1.2rem;"><i class="bi <?php echo $i <= $review['rating'] ? 'bi-star-fill' : 'bi-star'; ?>"></i></span>
                                         <?php endfor; ?>
                                         <span style="margin-left: 0.5rem;">(<?php echo $review['rating']; ?>/5)</span>
                                     </div>
@@ -270,7 +300,7 @@ function getOrderStatus($order) {
                                     <div style="margin: 0.5rem 0;">
                                         <strong>Оценка гида:</strong>
                                         <?php for($i = 1; $i <= 5; $i++): ?>
-                                            <span style="font-size: 1.2rem;"><?php echo $i <= $review['guide_rating'] ? '⭐' : '☆'; ?></span>
+                                            <span style="font-size: 1.2rem;"><i class="bi <?php echo $i <= $review['guide_rating'] ? 'bi-star-fill' : 'bi-star'; ?>"></i></span>
                                         <?php endfor; ?>
                                         <span style="margin-left: 0.5rem;">(<?php echo $review['guide_rating']; ?>/5)</span>
                                     </div>
@@ -279,7 +309,7 @@ function getOrderStatus($order) {
                                 </div>
                             <?php else: ?>
                                 <details style="margin-top: 1rem;" <?php echo !$review ? 'open' : ''; ?>>
-                                    <summary style="cursor: pointer; font-weight: bold; color: #3498db;"><?php echo $review ? '✏️ Редактировать отзыв' : '✍️ Оставить отзыв'; ?></summary>
+                                    <summary style="cursor: pointer; font-weight: bold; color: #3498db;"><i class="bi <?php echo $review ? 'bi-pencil' : 'bi-pencil-square'; ?>"></i> <?php echo $review ? 'Редактировать отзыв' : 'Оставить отзыв'; ?></summary>
                                     <form method="POST" action="<?php echo route_path('includes/submit_review.php'); ?>" style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 4px;">
                                         <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
                                         <?php if($review): ?>
@@ -288,28 +318,28 @@ function getOrderStatus($order) {
                                         <div class="form-group" style="margin-bottom: 1rem;">
                                             <label><strong>Оценка экскурсии:</strong></label>
                                             <select name="rating" required style="padding: 0.5rem; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 4px;">
-                                                <option value="5" <?php echo ($review && $review['rating'] == 5) ? 'selected' : ''; ?>>⭐⭐⭐⭐⭐ Отлично (5)</option>
-                                                <option value="4" <?php echo ($review && $review['rating'] == 4) ? 'selected' : ''; ?>>⭐⭐⭐⭐ Хорошо (4)</option>
-                                                <option value="3" <?php echo ($review && $review['rating'] == 3) ? 'selected' : ''; ?>>⭐⭐⭐ Нормально (3)</option>
-                                                <option value="2" <?php echo ($review && $review['rating'] == 2) ? 'selected' : ''; ?>>⭐⭐ Плохо (2)</option>
-                                                <option value="1" <?php echo ($review && $review['rating'] == 1) ? 'selected' : ''; ?>>⭐ Ужасно (1)</option>
+                                                <option value="5" <?php echo ($review && $review['rating'] == 5) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Отлично (5)</option>
+                                                <option value="4" <?php echo ($review && $review['rating'] == 4) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Хорошо (4)</option>
+                                                <option value="3" <?php echo ($review && $review['rating'] == 3) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Нормально (3)</option>
+                                                <option value="2" <?php echo ($review && $review['rating'] == 2) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Плохо (2)</option>
+                                                <option value="1" <?php echo ($review && $review['rating'] == 1) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i> Ужасно (1)</option>
                                             </select>
                                         </div>
                                         <div class="form-group" style="margin-bottom: 1rem;">
                                             <label><strong>Оценка гида:</strong></label>
                                             <select name="guide_rating" required style="padding: 0.5rem; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 4px;">
-                                                <option value="5" <?php echo ($review && $review['guide_rating'] == 5) ? 'selected' : ''; ?>>⭐⭐⭐⭐⭐ Отлично (5)</option>
-                                                <option value="4" <?php echo ($review && $review['guide_rating'] == 4) ? 'selected' : ''; ?>>⭐⭐⭐⭐ Хорошо (4)</option>
-                                                <option value="3" <?php echo ($review && $review['guide_rating'] == 3) ? 'selected' : ''; ?>>⭐⭐⭐ Нормально (3)</option>
-                                                <option value="2" <?php echo ($review && $review['guide_rating'] == 2) ? 'selected' : ''; ?>>⭐⭐ Плохо (2)</option>
-                                                <option value="1" <?php echo ($review && $review['guide_rating'] == 1) ? 'selected' : ''; ?>>⭐ Ужасно (1)</option>
+                                                <option value="5" <?php echo ($review && $review['guide_rating'] == 5) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Отлично (5)</option>
+                                                <option value="4" <?php echo ($review && $review['guide_rating'] == 4) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Хорошо (4)</option>
+                                                <option value="3" <?php echo ($review && $review['guide_rating'] == 3) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Нормально (3)</option>
+                                                <option value="2" <?php echo ($review && $review['guide_rating'] == 2) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> Плохо (2)</option>
+                                                <option value="1" <?php echo ($review && $review['guide_rating'] == 1) ? 'selected' : ''; ?>><i class="bi bi-star-fill"></i> Ужасно (1)</option>
                                             </select>
                                         </div>
                                         <div class="form-group" style="margin-bottom: 1rem;">
                                             <label><strong>Комментарий:</strong></label>
                                             <textarea name="comment" rows="4" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" placeholder="Расскажите о вашем опыте..."><?php echo $review ? htmlspecialchars($review['comment']) : ''; ?></textarea>
                                         </div>
-                                        <button type="submit" name="submit_review" class="btn btn-primary"><?php echo $review ? '💾 Сохранить изменения' : '📤 Отправить отзыв'; ?></button>
+                                        <button type="submit" name="submit_review" class="btn btn-primary"><i class="bi <?php echo $review ? 'bi-save' : 'bi-send'; ?>"></i> <?php echo $review ? 'Сохранить изменения' : 'Отправить отзыв'; ?></button>
                                     </form>
                                 </details>
                             <?php endif; ?>
@@ -356,17 +386,17 @@ function getOrderStatus($order) {
                     <div class="card-content" style="padding: 1rem;">
                         <h3><?php echo htmlspecialchars($exc['title']); ?></h3>
                         <p class="description" style="color: #666; margin: 0.5rem 0;"><?php echo htmlspecialchars($exc['short_description'] ?? ''); ?></p>
-                        <p class="city">📍 <?php echo htmlspecialchars($exc['city']); ?></p>
-                        <p class="category">🏷️ <?php echo htmlspecialchars($exc['category']); ?></p>
-                        <p class="guide">👤 Гид: <?php echo htmlspecialchars($exc['guide_name']); ?></p>
-                        <p class="duration">⏱️ <?php echo $exc['duration']; ?> мин.</p>
-                        <p class="price" style="font-weight: bold; font-size: 1.2rem; color: #e74c3c;">💰 <?php echo number_format($exc['price'], 2); ?> руб./чел.</p>
+                        <p class="city"><i class="bi bi-geo-alt"></i> <?php echo htmlspecialchars($exc['city']); ?></p>
+                        <p class="category"><i class="bi bi-tag"></i> <?php echo htmlspecialchars($exc['category']); ?></p>
+                        <p class="guide"><i class="bi bi-person"></i> Гид: <?php echo htmlspecialchars($exc['guide_name']); ?></p>
+                        <p class="duration"><i class="bi bi-clock"></i> <?php echo $exc['duration']; ?> мин.</p>
+                        <p class="price" style="font-weight: bold; font-size: 1.2rem; color: #e74c3c;"><i class="bi bi-currency-exchange"></i> <?php echo number_format($exc['price'], 2); ?> руб./чел.</p>
                         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                             <a href="<?php echo route_path('pages/booking.php'); ?>?excursion_id=<?php echo $exc['id']; ?>" class="btn btn-primary" style="flex: 1;">Забронировать</a>
                             <form method="POST" action="<?php echo route_path('includes/manage_favorite.php'); ?>" style="margin: 0;">
                                 <input type="hidden" name="excursion_id" value="<?php echo $exc['id']; ?>">
                                 <input type="hidden" name="action" value="remove">
-                                <button type="submit" class="btn btn-danger" title="Убрать из избранного">❤️</button>
+                                <button type="submit" class="btn btn-danger" title="Убрать из избранного"><i class="bi bi-heart-fill"></i></button>
                             </form>
                         </div>
                     </div>
@@ -376,7 +406,7 @@ function getOrderStatus($order) {
                 else:
                 ?>
                 <div style="text-align: center; padding: 3rem; color: #888;">
-                    <p style="font-size: 1.5rem; margin-bottom: 1rem;">🤍</p>
+                    <p style="font-size: 1.5rem; margin-bottom: 1rem;"><i class="bi bi-heart"></i></p>
                     <p>Вы еще не добавили ни одной экскурсии в избранное.</p>
                     <a href="<?php echo route_path('pages/excursions.php'); ?>" class="btn btn-primary" style="margin-top: 1rem;">Посмотреть экскурсии</a>
                 </div>
@@ -403,6 +433,24 @@ function openTab(tabName) {
     // Показать выбранную вкладку
     document.getElementById(tabName).classList.add('active');
     event.currentTarget.classList.add('active');
+}
+
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.querySelector('.avatar-preview');
+            const placeholder = document.querySelector('.avatar-placeholder');
+            if (preview) {
+                preview.src = e.target.result;
+            } else if (placeholder) {
+                placeholder.innerHTML = '<img src="' + e.target.result + '" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">';
+                placeholder.classList.remove('avatar-placeholder');
+                placeholder.classList.add('avatar-preview');
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 </script>
 
