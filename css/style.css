@@ -69,7 +69,22 @@ body {
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 32px;
+    justify-content: flex-end;
+    gap: 0;
+}
+
+.nav-menu a,
+.nav-menu span {
+    margin: 0 12px;
+    flex-shrink: 0;
+}
+
+.nav-menu > *:first-child {
+    margin-left: 0;
+}
+
+.nav-menu > *:last-child {
+    margin-right: 0;
 }
 
 .nav-menu a {
@@ -203,9 +218,14 @@ body {
 
 .hero-search-form {
     display: flex;
-    gap: 12px;
+    gap: 0;
     max-width: 600px;
     margin: 0 auto;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    padding: 4px;
 }
 
 .hero-search-input {
@@ -216,14 +236,19 @@ body {
     font-size: 16px;
     font-weight: 500;
     outline: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: box-shadow 0.2s ease;
+    background: white;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
     height: 48px;
     box-sizing: border-box;
 }
 
+.hero-search-input::placeholder {
+    color: var(--text-light);
+}
+
 .hero-search-input:focus {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    outline: none;
 }
 
 .hero-search-btn {
@@ -237,6 +262,15 @@ body {
     height: 48px;
     box-sizing: border-box;
     font-size: 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.hero-search-btn:hover {
+    background: var(--primary-hover);
 }
 
 /* Кнопки в стиле GetYourGuide */
@@ -484,21 +518,7 @@ body {
     resize: vertical;
 }
 
-.form-group .promo-code-wrapper {
-    display: flex;
-    gap: 12px;
-    align-items: stretch;
-}
-
-.form-group .promo-code-wrapper input {
-    flex: 1;
-}
-
-.form-group .promo-code-wrapper .btn {
-    flex-shrink: 0;
-}
-
-.booking-form .btn:not(.promo-code-wrapper .btn) {
+.booking-form .btn {
     width: 100%;
     justify-content: center;
     margin-top: 12px;
@@ -853,7 +873,7 @@ body {
 }
 
 .favorite-section {
-    margin-top: 24px;
+    margin-top: 8px;
 }
 
 .favorite-section .btn {
@@ -1068,23 +1088,20 @@ section {
     .hero-search-form {
         flex-direction: column;
         max-width: 100%;
+        padding: 0;
+        border-radius: 50px;
     }
     
     .hero-search-input {
         width: 100%;
+        border-radius: 50px;
     }
     
     .hero-search-btn {
         width: 100%;
         justify-content: center;
-    }
-    
-    .form-group .promo-code-wrapper {
-        flex-direction: column;
-    }
-    
-    .form-group .promo-code-wrapper .btn {
-        width: 100%;
+        border-radius: 50px;
+        margin-top: 8px;
     }
 }
 

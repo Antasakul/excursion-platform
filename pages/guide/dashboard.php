@@ -183,7 +183,7 @@ function getOrderStatus($order) {
 
     <!-- Вкладка моих экскурсий -->
     <div id="my_excursions" class="tab-content">
-        <h2>Мои экскурсии</h2>
+       <!-- <h2>Мои экскурсии</h2>-->
         <a href="<?php echo route_path('pages/create_excursions.php'); ?>" class="btn btn-primary">Создать новую экскурсию</a>
         
         <div class="excursions-grid">
@@ -212,7 +212,7 @@ function getOrderStatus($order) {
 
     <!-- Вкладка бронирований гида -->
     <div id="guide_orders" class="tab-content">
-        <h2>Бронирования моих экскурсий</h2>
+       <!-- <h2>Бронирования моих экскурсий</h2>-->
         <div class="orders-list">
             <?php
             $stmt = $pdo->prepare("

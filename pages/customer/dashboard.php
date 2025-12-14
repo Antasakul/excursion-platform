@@ -184,7 +184,7 @@ function getOrderStatus($order) {
 
     <!-- Вкладка заказов клиента -->
     <div id="my_orders" class="tab-content">
-        <h2>Мои заказы</h2>
+        <!--<h2>Мои заказы</h2>-->
         <div class="orders-list">
             <?php
             // Получаем заказы, исключая отмененные пользователем (показываем только отмененные гидом)
@@ -313,7 +313,7 @@ function getOrderStatus($order) {
     
     <!-- Вкладка избранного -->
     <div id="favorites" class="tab-content">
-        <h2>Избранное</h2>
+       <!-- <h2>Избранное</h2>-->
         <div class="excursions-grid">
             <?php
             $stmt = $pdo->prepare("

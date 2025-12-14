@@ -106,72 +106,224 @@ require_once base_path('includes/header.php');
             </small>
         </div>
         
-        <div class="form-group">
-            <label>Дополнительные изображения (галерея):</label>
-            <input type="file" name="additional_images[]" multiple accept="image/jpeg,image/jpg,image/png,image/gif,image/webp">
-            <small style="color: #666; display: block; margin-top: 0.25rem;">
-                Можно выбрать несколько файлов. Каждый файл до 20 МБ. Форматы: JPG, PNG, GIF, WEBP
-            </small>
-            <small style="color: #e74c3c; display: block; margin-top: 0.25rem;">
-                <i class="bi bi-exclamation-triangle"></i> Если общий размер всех файлов превышает лимит сервера, загрузка не произойдет. 
-                Рекомендуется загружать изображения по одному или уменьшить их размер.
-            </small>
-        </div>
         
-        <h3>Доступные даты</h3>
+        <h3 style="margin-top: 32px; margin-bottom: 20px; font-size: 20px; color: var(--text-dark);">
+            <i class="bi bi-calendar-event"></i> Доступные даты
+        </h3>
         <div id="dates-container">
-            <div class="date-item form-row">
-                <div class="form-group">
-                    <label>Дата:</label>
-                    <input type="date" name="dates[]" required min="<?php echo date('Y-m-d'); ?>">
+            <div class="date-item-compact">
+                <div class="date-item-row">
+                    <div class="date-field">
+                        <label><i class="bi bi-calendar"></i> Дата:</label>
+                        <input type="date" name="dates[]" required min="<?php echo date('Y-m-d'); ?>" class="date-input">
+                    </div>
+                    <div class="date-field">
+                        <label><i class="bi bi-clock"></i> Время:</label>
+                        <input type="time" name="times[]" required class="time-input">
+                    </div>
+                    <div class="date-field">
+                        <label><i class="bi bi-people"></i> Мест:</label>
+                        <input type="number" name="slots[]" required min="1" class="slots-input">
+                    </div>
+                    <button type="button" class="btn-remove-date" title="Удалить дату">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label>Время:</label>
-                    <input type="time" name="times[]" required>
-                </div>
-                <div class="form-group">
-                    <label>Доступных мест:</label>
-                    <input type="number" name="slots[]" required min="1">
-                </div>
-                <button type="button" class="btn btn-danger remove-date">Удалить</button>
             </div>
         </div>
         
-        <button type="button" id="add-date" class="btn btn-secondary">Добавить дату</button>
+        <button type="button" id="add-date" class="btn btn-secondary btn-compact">
+            <i class="bi bi-plus-circle"></i> Добавить дату
+        </button>
         
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Создать экскурсию</button>
-            <a href="<?php echo route_path('pages/guide/dashboard.php'); ?>" class="btn btn-danger">Отмена</a>
+            <button type="submit" class="btn btn-primary btn-compact">
+                <i class="bi bi-check-lg"></i> Создать экскурсию
+            </button>
+            <a href="<?php echo route_path('pages/guide/dashboard.php'); ?>" class="btn btn-danger btn-compact">
+                <i class="bi bi-x-lg"></i> Отмена
+            </a>
         </div>
     </form>
 </div>
+
+<style>
+.date-item-compact {
+    background: var(--bg-light);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.date-item-row {
+    display: flex;
+    align-items: end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.date-field {
+    flex: 1;
+    min-width: 150px;
+}
+
+.date-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.date-field label i {
+    color: var(--primary-color);
+    font-size: 14px;
+}
+
+.date-input,
+.time-input,
+.slots-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.date-input:focus,
+.time-input:focus,
+.slots-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+.btn-remove-date {
+    background: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    flex-shrink: 0;
+}
+
+.btn-remove-date:hover {
+    background: #DC2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-remove-date i {
+    font-size: 18px;
+}
+
+.checkbox-field {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.small-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.btn-compact {
+    padding: 12px 24px;
+    font-size: 15px;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+}
+
+.form-actions .btn {
+    flex: 1;
+    min-width: 150px;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .date-item-row {
+        flex-direction: column;
+    }
+    
+    .date-field {
+        width: 100%;
+    }
+    
+    .btn-remove-date {
+        width: 100%;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
 
 <script>
 document.getElementById('add-date').addEventListener('click', function() {
     const container = document.getElementById('dates-container');
     const newDate = document.createElement('div');
-    newDate.className = 'date-item form-row';
+    newDate.className = 'date-item-compact';
     newDate.innerHTML = `
-        <div class="form-group">
-            <label>Дата:</label>
-            <input type="date" name="dates[]" required min="<?php echo date('Y-m-d'); ?>">
+        <div class="date-item-row">
+            <div class="date-field">
+                <label><i class="bi bi-calendar"></i> Дата:</label>
+                <input type="date" name="dates[]" required min="<?php echo date('Y-m-d'); ?>" class="date-input">
+            </div>
+            <div class="date-field">
+                <label><i class="bi bi-clock"></i> Время:</label>
+                <input type="time" name="times[]" required class="time-input">
+            </div>
+            <div class="date-field">
+                <label><i class="bi bi-people"></i> Мест:</label>
+                <input type="number" name="slots[]" required min="1" class="slots-input">
+            </div>
+            <button type="button" class="btn-remove-date" title="Удалить дату">
+                <i class="bi bi-x-circle"></i>
+            </button>
         </div>
-        <div class="form-group">
-            <label>Время:</label>
-            <input type="time" name="times[]" required>
-        </div>
-        <div class="form-group">
-            <label>Доступных мест:</label>
-            <input type="number" name="slots[]" required min="1">
-        </div>
-        <button type="button" class="btn btn-danger remove-date">Удалить</button>
     `;
     container.appendChild(newDate);
 });
 
 document.addEventListener('click', function(e) {
-    if(e.target.classList.contains('remove-date')) {
-        e.target.closest('.date-item').remove();
+    if(e.target.closest('.btn-remove-date')) {
+        e.target.closest('.date-item-compact').remove();
     }
 });
 </script>

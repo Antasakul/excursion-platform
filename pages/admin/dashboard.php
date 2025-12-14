@@ -55,6 +55,25 @@ $reviewsStmt = $pdo->query("
 ");
 $reviews = $reviewsStmt->fetchAll();
 
+// Получаем все промокоды
+try {
+    $promoCodesStmt = $pdo->query("
+        SELECT * FROM promo_codes 
+        ORDER BY id DESC
+    ");
+    $promoCodes = $promoCodesStmt->fetchAll();
+} catch(PDOException $e) {
+    try {
+        $promoCodesStmt = $pdo->query("
+            SELECT * FROM promo_codes 
+            ORDER BY created_at DESC
+        ");
+        $promoCodes = $promoCodesStmt->fetchAll();
+    } catch(PDOException $e2) {
+        $promoCodes = [];
+    }
+}
+
 require_once base_path('includes/header.php');
 ?>
 
@@ -71,9 +90,6 @@ require_once base_path('includes/header.php');
     <div class="dashboard-tabs">
         <button class="tab-btn active" onclick="openTab('admin_panel')"><i class="bi bi-speedometer2"></i> Админ-панель</button>
         <button class="tab-btn" onclick="openTab('profile')"><i class="bi bi-person"></i> Профиль</button>
-        <a href="<?php echo route_path('pages/admin/promo_codes.php'); ?>" class="tab-btn" style="text-decoration: none;">
-            <i class="bi bi-ticket-perforated"></i> Промокоды
-        </a>
     </div>
     
     <!-- Вкладка профиля -->
@@ -203,8 +219,12 @@ require_once base_path('includes/header.php');
         </div>
     </section>
 
-    <section class="admin-section">
-        <h2><i class="bi bi-people"></i> Управление пользователями (<?php echo count($users); ?>)</h2>
+    <section class="admin-section accordion-section">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <h2><i class="bi bi-people"></i> Управление пользователями (<?php echo count($users); ?>)</h2>
+            <i class="bi bi-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" style="display: none;">
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
@@ -264,10 +284,15 @@ require_once base_path('includes/header.php');
                 </tbody>
             </table>
         </div>
+        </div>
     </section>
 
-    <section class="admin-section">
-        <h2><i class="bi bi-map"></i> Управление экскурсиями (<?php echo count($excursions); ?>)</h2>
+    <section class="admin-section accordion-section">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <h2><i class="bi bi-map"></i> Управление экскурсиями (<?php echo count($excursions); ?>)</h2>
+            <i class="bi bi-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" style="display: none;">
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
@@ -314,10 +339,15 @@ require_once base_path('includes/header.php');
                 </tbody>
             </table>
         </div>
+        </div>
     </section>
 
-    <section class="admin-section">
-        <h2><i class="bi bi-cart"></i> Последние заказы (<?php echo count($latestOrders); ?>)</h2>
+    <section class="admin-section accordion-section">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <h2><i class="bi bi-cart"></i> Последние заказы (<?php echo count($latestOrders); ?>)</h2>
+            <i class="bi bi-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" style="display: none;">
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
@@ -385,10 +415,15 @@ require_once base_path('includes/header.php');
                 </tbody>
             </table>
         </div>
+        </div>
     </section>
 
-    <section class="admin-section">
-        <h2><i class="bi bi-star"></i> Отзывы (<?php echo count($reviews); ?>)</h2>
+    <section class="admin-section accordion-section">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <h2><i class="bi bi-star"></i> Отзывы (<?php echo count($reviews); ?>)</h2>
+            <i class="bi bi-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" style="display: none;">
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
@@ -448,6 +483,170 @@ require_once base_path('includes/header.php');
                 </tbody>
             </table>
         </div>
+        </div>
+    </section>
+
+    <!-- Секция управления промокодами -->
+    <section class="admin-section accordion-section">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <h2><i class="bi bi-ticket-perforated"></i> Управление промокодами (<?php echo count($promoCodes); ?>)</h2>
+            <i class="bi bi-chevron-down accordion-icon"></i>
+        </div>
+        <div class="accordion-content" style="display: none;">
+            <?php if(isset($_SESSION['success'])): ?>
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i> <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
+                </div>
+            <?php endif; ?>
+            <?php if(isset($_SESSION['error'])): ?>
+                <div class="alert alert-error">
+                    <i class="bi bi-exclamation-triangle"></i> <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- Форма добавления/редактирования промокода -->
+            <div class="promo-form-card" style="background: var(--bg-white); padding: 24px; border-radius: var(--radius-md); margin-bottom: 24px; border: 1px solid var(--border-color);">
+                <h2 style="margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 12px;">
+                    <i class="bi bi-plus-circle"></i> 
+                    <span id="form-title">Добавить новый промокод</span>
+                </h2>
+                <form method="POST" action="<?php echo route_path('includes/manage_promo.php'); ?>" id="promoForm">
+                    <input type="hidden" name="action" value="create" id="form-action">
+                    <input type="hidden" name="promo_id" id="promo-id">
+                    <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><i class="bi bi-tag"></i> Код промокода</label>
+                            <input type="text" name="code" id="promo-code" required 
+                                   placeholder="SUMMER2024" pattern="[A-Z0-9]+" 
+                                   style="text-transform: uppercase; width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                            <small style="color: var(--text-light); font-size: 12px;">Только заглавные буквы и цифры</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><i class="bi bi-percent"></i> Процент скидки</label>
+                            <input type="number" name="discount_percent" id="promo-discount" 
+                                   required min="1" max="100" step="0.01" 
+                                   placeholder="10.00" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                            <small style="color: var(--text-light); font-size: 12px;">От 1 до 100%</small>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><i class="bi bi-calendar-check"></i> Срок действия</label>
+                            <input type="date" name="valid_until" id="promo-valid-until" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                            <small style="color: var(--text-light); font-size: 12px;">Дата окончания действия промокода</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;"><i class="bi bi-123"></i> Максимум использований</label>
+                            <input type="number" name="max_uses" id="promo-max-uses" 
+                                   required min="1" placeholder="100" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                            <small style="color: var(--text-light); font-size: 12px;">Максимальное количество использований</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="is_active" id="promo-is-active" checked style="width: auto;">
+                            <span><i class="bi bi-toggle-on"></i> Активен</span>
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">
+                            <i class="bi bi-check-lg"></i> Сохранить
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetPromoForm()" id="cancel-btn" style="display: none; padding: 10px 20px;">
+                            <i class="bi bi-x-lg"></i> Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Список промокодов -->
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-hash"></i> ID</th>
+                            <th><i class="bi bi-tag"></i> Код</th>
+                            <th><i class="bi bi-percent"></i> Скидка</th>
+                            <th><i class="bi bi-123"></i> Использовано</th>
+                            <th><i class="bi bi-calendar-check"></i> Срок действия</th>
+                            <th><i class="bi bi-toggle-on"></i> Статус</th>
+                            <th><i class="bi bi-gear"></i> Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if(empty($promoCodes)): ?>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                    <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 16px; opacity: 0.3;"></i>
+                                    Промокоды не найдены
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach($promoCodes as $promo): ?>
+                                <?php
+                                $isExpired = strtotime($promo['valid_until']) < time();
+                                $isExhausted = $promo['used_count'] >= $promo['max_uses'];
+                                $statusClass = '';
+                                $statusText = '';
+                                
+                                if (!$promo['is_active']) {
+                                    $statusClass = 'status-inactive';
+                                    $statusText = 'Неактивен';
+                                } elseif ($isExpired) {
+                                    $statusClass = 'status-expired';
+                                    $statusText = 'Истёк';
+                                } elseif ($isExhausted) {
+                                    $statusClass = 'status-exhausted';
+                                    $statusText = 'Исчерпан';
+                                } else {
+                                    $statusClass = 'status-active';
+                                    $statusText = 'Активен';
+                                }
+                                ?>
+                                <tr>
+                                    <td><?php echo $promo['id']; ?></td>
+                                    <td><strong><?php echo htmlspecialchars($promo['code']); ?></strong></td>
+                                    <td><?php echo number_format($promo['discount_percent'], 2); ?>%</td>
+                                    <td><?php echo $promo['used_count']; ?> / <?php echo $promo['max_uses']; ?></td>
+                                    <td><?php echo date('d.m.Y', strtotime($promo['valid_until'])); ?></td>
+                                    <td>
+                                        <span class="status-badge <?php echo $statusClass; ?>">
+                                            <?php echo $statusText; ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 8px;">
+                                            <button onclick="editPromo(<?php echo htmlspecialchars(json_encode($promo)); ?>)" 
+                                                    class="btn btn-sm btn-primary" 
+                                                    style="padding: 6px 12px; font-size: 14px;">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <form method="POST" action="<?php echo route_path('includes/manage_promo.php'); ?>" style="display: inline;">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="promo_id" value="<?php echo $promo['id']; ?>">
+                                                <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                                <button type="submit" class="btn btn-sm btn-danger" 
+                                                        style="padding: 6px 12px; font-size: 14px;"
+                                                        onclick="return confirm('Вы уверены, что хотите удалить промокод <?php echo htmlspecialchars($promo['code']); ?>?');">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </section>
     </div>
 </div>
@@ -491,6 +690,48 @@ function resetForm() {
     const form = document.getElementById('profileForm');
     form.reset();
     location.reload();
+}
+
+function toggleAccordion(header) {
+    const section = header.closest('.accordion-section');
+    const content = section.querySelector('.accordion-content');
+    const icon = header.querySelector('.accordion-icon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-up');
+        section.classList.add('active');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('bi-chevron-up');
+        icon.classList.add('bi-chevron-down');
+        section.classList.remove('active');
+    }
+}
+
+function editPromo(promo) {
+    document.getElementById('form-title').textContent = 'Редактировать промокод';
+    document.getElementById('form-action').value = 'update';
+    document.getElementById('promo-id').value = promo.id;
+    document.getElementById('promo-code').value = promo.code;
+    document.getElementById('promo-discount').value = promo.discount_percent;
+    document.getElementById('promo-valid-until').value = promo.valid_until;
+    document.getElementById('promo-max-uses').value = promo.max_uses;
+    document.getElementById('promo-is-active').checked = promo.is_active == 1;
+    document.getElementById('cancel-btn').style.display = 'inline-block';
+    
+    // Прокрутить к форме
+    document.getElementById('promoForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetPromoForm() {
+    document.getElementById('form-title').textContent = 'Добавить новый промокод';
+    document.getElementById('form-action').value = 'create';
+    document.getElementById('promo-id').value = '';
+    document.getElementById('promoForm').reset();
+    document.getElementById('promo-is-active').checked = true;
+    document.getElementById('cancel-btn').style.display = 'none';
 }
 </script>
 
@@ -823,19 +1064,66 @@ function resetForm() {
 .admin-section {
     background: var(--bg-white);
     border-radius: var(--radius-md);
-    padding: 32px;
+    padding: 0;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
+    overflow: hidden;
 }
 
-.admin-section h2 {
+.accordion-section {
+    transition: all 0.3s ease;
+}
+
+.accordion-header {
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.accordion-header:hover {
+    background: var(--bg-light);
+}
+
+.accordion-section.active .accordion-header {
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.accordion-header h2 {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 24px;
-    font-size: 24px;
+    margin: 0;
+    font-size: 20px;
     color: var(--text-dark);
+    font-weight: 600;
+}
+
+.accordion-icon {
+    font-size: 20px;
+    color: var(--primary-color);
+    transition: transform 0.3s ease;
+}
+
+.accordion-content {
+    padding: 24px 32px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .admin-table {

@@ -176,11 +176,9 @@ if(count($reviews) > 0) {
                             </div>
                             
                             <div class="form-group">
-                                <label>Промо-код:</label>
-                                <div class="promo-code-wrapper">
-                                    <input type="text" name="promo_code" id="promoCode" placeholder="Введите промо-код">
-                                    <button type="button" id="applyPromo" class="btn btn-secondary">Применить</button>
-                                </div>
+                                <label>Промокод:</label>
+                                <input type="text" name="promo_code" id="promoCode" placeholder="Введите промокод">
+                                <button type="button" id="applyPromo" class="btn btn-secondary" style="margin-top: 8px; width: 100%;">Применить</button>
                             </div>
                             
                             <div class="form-group">
@@ -281,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
     dateSelect.addEventListener('change', calculatePrice);
     participantsCount.addEventListener('input', calculatePrice);
     
-    // Применение промо-кода
+    // Применение промокода
     document.getElementById('applyPromo').addEventListener('click', function() {
         const promoCode = promoCodeInput.value.trim();
         if(promoCode) {
@@ -297,14 +295,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if(data.success) {
                     currentDiscount = data.discount_percent / 100;
                     calculatePrice();
-                    alert('Промо-код применен! Скидка: ' + data.discount_percent + '%');
+                    alert('Промокод применен! Скидка: ' + data.discount_percent + '%');
                 } else {
                     alert(data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ошибка при применении промо-кода');
+                alert('Ошибка при применении промокода');
             });
         }
     });

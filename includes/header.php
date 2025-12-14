@@ -28,7 +28,6 @@ require_once __DIR__ . '/../config/app.php';
                     <?php else: ?>
                         <a href="<?php echo route_path('pages/dashboard.php'); ?>">Личный кабинет</a>
                     <?php endif; ?>
-                    <span style="color: white;">Привет, <?php echo htmlspecialchars($_SESSION['full_name']); ?>!</span>
                     <a href="<?php echo route_path('includes/auth.php'); ?>?action=logout">Выйти</a>
                 <?php else: ?>
                     <a href="<?php echo route_path('pages/login.php'); ?>">Войти</a>
