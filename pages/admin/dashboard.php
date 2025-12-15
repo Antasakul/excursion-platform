@@ -20,7 +20,7 @@ $stats = [
     'orders' => $pdo->query("SELECT COUNT(*) AS total FROM orders")->fetch()['total']
 ];
 
-$usersStmt = $pdo->query("SELECT id, username, email, full_name, user_type, created_at FROM users ORDER BY created_at DESC LIMIT 20");
+$usersStmt = $pdo->query("SELECT id, username, email, full_name, user_type, created_at, avatar_url FROM users ORDER BY created_at DESC LIMIT 20");
 $users = $usersStmt->fetchAll();
 
 $latestOrdersStmt = $pdo->query("
@@ -78,7 +78,7 @@ require_once base_path('includes/header.php');
 ?>
 
 <div class="dashboard-container" style="max-width: 1400px; margin: 0 auto; padding: 24px;">
-    <h1><i class="bi bi-speedometer2"></i> Админ-панель</h1>
+  <!--  <h1>Админ-панель</h1>-->
 
     <?php if(isset($_SESSION['success'])): ?>
         <div class="alert alert-success"><?php echo $_SESSION['success']; unset($_SESSION['success']); ?></div>
@@ -88,8 +88,8 @@ require_once base_path('includes/header.php');
     <?php endif; ?>
     
     <div class="dashboard-tabs">
-        <button class="tab-btn active" onclick="openTab('admin_panel')"><i class="bi bi-speedometer2"></i> Админ-панель</button>
-        <button class="tab-btn" onclick="openTab('profile')"><i class="bi bi-person"></i> Профиль</button>
+        <button class="tab-btn active" onclick="openTab('admin_panel')">Админ-панель</button>
+        <button class="tab-btn" onclick="openTab('profile')">Профиль</button>
     </div>
     
     <!-- Вкладка профиля -->
@@ -198,24 +198,49 @@ require_once base_path('includes/header.php');
 
     <section class="stats-grid">
         <div class="stat-card">
-            <h3>Пользователей</h3>
-            <p><?php echo $stats['users']; ?></p>
+            <div class="stat-icon" style="background: #8B5CF6;">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Пользователей</span>
+                <span class="stat-value"><?php echo $stats['users']; ?></span>
+            </div>
         </div>
         <div class="stat-card">
-            <h3>Гидов</h3>
-            <p><?php echo $stats['guides']; ?></p>
+            <div class="stat-icon" style="background: #F97316;">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Гидов</span>
+                <span class="stat-value"><?php echo $stats['guides']; ?></span>
+            </div>
         </div>
         <div class="stat-card">
-            <h3>Клиентов</h3>
-            <p><?php echo $stats['customers']; ?></p>
+            <div class="stat-icon" style="background: #F59E0B;">
+                <i class="bi bi-person-check"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Клиентов</span>
+                <span class="stat-value"><?php echo $stats['customers']; ?></span>
+            </div>
         </div>
         <div class="stat-card">
-            <h3>Экскурсий</h3>
-            <p><?php echo $stats['excursions']; ?> (<?php echo $stats['active_excursions']; ?> активны)</p>
+            <div class="stat-icon" style="background: #3B82F6;">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Экскурсий</span>
+                <span class="stat-value"><?php echo $stats['excursions']; ?></span>
+            </div>
         </div>
         <div class="stat-card">
-            <h3>Заказов</h3>
-            <p><?php echo $stats['orders']; ?></p>
+            <div class="stat-icon" style="background: #10B981;">
+                <i class="bi bi-cart-check"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">Заказов</span>
+                <span class="stat-value"><?php echo $stats['orders']; ?></span>
+            </div>
         </div>
     </section>
 
@@ -267,16 +292,38 @@ require_once base_path('includes/header.php');
                             </td>
                             <td><?php echo date('d.m.Y', strtotime($user['created_at'])); ?></td>
                             <td>
-                                <?php if($user['avatar_url'] && $user['id'] !== $_SESSION['user_id']): ?>
-                                    <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" class="inline-form">
-                                        <input type="hidden" name="action" value="toggle_user_avatar">
-                                        <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                        <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
-                                        <button type="submit" class="btn btn-warning" style="padding: 6px 12px; font-size: 14px;">
-                                            <i class="bi bi-trash"></i>
+                                <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch; min-width: 100px;">
+                                    <?php if($user['id'] !== $_SESSION['user_id']): ?>
+                                        <button onclick="openEditUserModal(<?php echo htmlspecialchars(json_encode($user)); ?>)" 
+                                                class="btn btn-primary" 
+                                                style="padding: 6px 12px; font-size: 14px; width: 100%;">
+                                            <i class="bi bi-pencil"></i>
                                         </button>
-                                    </form>
-                                <?php endif; ?>
+                                        <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" 
+                                              class="inline-form" 
+                                              style="width: 100%;"
+                                              onsubmit="return confirm('Вы уверены, что хотите удалить пользователя <?php echo htmlspecialchars($user['full_name']); ?>?');">
+                                            <input type="hidden" name="action" value="delete_user">
+                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                            <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                            <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 14px; width: 100%;">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                        <?php if(isset($user['avatar_url']) && !empty($user['avatar_url'])): ?>
+                                            <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>" class="inline-form" style="width: 100%;">
+                                                <input type="hidden" name="action" value="toggle_user_avatar">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+                                                <button type="submit" class="btn btn-warning" style="padding: 6px 12px; font-size: 14px; width: 100%;" title="Удалить аватар">
+                                                    <i class="bi bi-image"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <span style="color: var(--text-light); font-size: 13px; text-align: center;">Текущий пользователь</span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -733,6 +780,27 @@ function resetPromoForm() {
     document.getElementById('promo-is-active').checked = true;
     document.getElementById('cancel-btn').style.display = 'none';
 }
+
+function openEditUserModal(user) {
+    document.getElementById('edit-user-id').value = user.id;
+    document.getElementById('edit-user-full-name').value = user.full_name || '';
+    document.getElementById('edit-user-email').value = user.email || '';
+    document.getElementById('edit-user-phone').value = user.phone || '';
+    document.getElementById('edit-user-password').value = '';
+    document.getElementById('editUserModal').style.display = 'flex';
+}
+
+function closeEditUserModal() {
+    document.getElementById('editUserModal').style.display = 'none';
+}
+
+// Закрытие модального окна при клике вне его
+window.onclick = function(event) {
+    const modal = document.getElementById('editUserModal');
+    if (event.target === modal) {
+        closeEditUserModal();
+    }
+}
 </script>
 
 <style>
@@ -1187,19 +1255,21 @@ function resetPromoForm() {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
     margin-bottom: 32px;
 }
 
 .stat-card {
     background: var(--bg-white);
-    padding: 24px;
+    padding: 20px;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    text-align: center;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .stat-card:hover {
@@ -1207,20 +1277,39 @@ function resetPromoForm() {
     box-shadow: var(--shadow-md);
 }
 
-.stat-card h3 {
-    font-size: 14px;
-    color: var(--text-light);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.stat-card p {
-    font-size: 32px;
+.stat-icon i {
+    font-size: 24px;
+    color: white;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 24px;
     font-weight: 700;
-    color: var(--primary-color);
-    margin: 0;
+    color: var(--text-dark);
+    line-height: 1.2;
 }
 
 @media (max-width: 1024px) {
@@ -1250,6 +1339,59 @@ function resetPromoForm() {
     }
 }
 </style>
+
+<!-- Модальное окно для редактирования пользователя -->
+<div id="editUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 32px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 style="margin: 0; font-size: 24px; color: var(--text-dark);">Редактировать пользователя</h2>
+            <button onclick="closeEditUserModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-light); padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <form method="POST" action="<?php echo route_path('includes/admin_actions.php'); ?>">
+            <input type="hidden" name="action" value="update_user">
+            <input type="hidden" name="user_id" id="edit-user-id">
+            <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Имя</label>
+                <input type="text" name="full_name" id="edit-user-full-name" required 
+                       style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Email</label>
+                <input type="email" name="email" id="edit-user-email" required 
+                       style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Телефон</label>
+                <input type="tel" name="phone" id="edit-user-phone" 
+                       style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark);">Новый пароль</label>
+                <input type="password" name="new_password" id="edit-user-password" 
+                       placeholder="Оставьте пустым, если не меняете"
+                       style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px;">
+                <small style="color: var(--text-light); font-size: 13px; display: block; margin-top: 4px;">Минимум 6 символов</small>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" onclick="closeEditUserModal()" class="btn btn-secondary" style="padding: 12px 24px;">
+                    Отмена
+                </button>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
+                    <i class="bi bi-check-lg"></i> Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <?php require_once base_path('includes/footer.php'); ?>
 

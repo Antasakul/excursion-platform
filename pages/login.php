@@ -27,7 +27,7 @@ require_once base_path('includes/header.php');
 
         <form method="POST" action="<?php echo route_path('includes/auth.php'); ?>">
             <div class="form-group">
-                <label>Имя пользователя:</label>
+                <label>Имя пользователя или email:</label>
                 <input type="text" name="username" required autocomplete="username"
                        value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
             </div>
